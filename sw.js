@@ -1,4 +1,4 @@
-const CACHE_NAME = 'steril-app-v3';
+const CACHE_NAME = 'steril-app-v4';
 
 // Daftar file yang akan disimpan ke memori HP (Cache)
 const urlsToCache = [
