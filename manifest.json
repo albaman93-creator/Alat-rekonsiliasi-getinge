@@ -1,8 +1,8 @@
 {
   "name": "Alat Hitung Waktu Steril Getinge 2",
   "short_name": "Hitung Steril",
-  "description": "Aplikasi hitung cepat waktu sterilisasi untuk mesin Getinge 2.",
-  "start_url": "./index.html",
+  "description": "Aplikasi hitung cepat waktu sterilisasi untuk mesin Getinge .",
+  "start_url": "./", 
   "display": "standalone",
   "background_color": "#eef2f6",
   "theme_color": "#1e3a8a",
