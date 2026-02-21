@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alat Hitung Waktu Steril Getinge 2</title>
+    
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#1e3a8a">
+    <link rel="apple-touch-icon" href="./icon-192.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        /* =========================================
+           1. TEMA BERSIH (White, Light Grey, Biru Dongker) 
+           ========================================= */
+        :root {
+            --bg-body: #eef2f6; 
+            --bg-card: #ffffff; 
+            --shadow-out: 0 20px 40px rgba(30, 58, 138, 0.1), 0 5px 15px rgba(30, 58, 138, 0.05);
+            --shadow-in: inset 0 2px 0px rgba(255, 255, 255, 1);
+            --text-main: #1e3a8a; 
+            --text-label: #334155;
+            --border-light: #cbd5e1;
+            --border-focus: #2563eb;
+            --bg-input: #f8fafc;
+            --text-input: #0f172a; 
+            --glow-focus: rgba(37, 99, 235, 0.2); 
+            --btn-hitung: #10b981; 
+            --btn-reset: #ef4444;  
+            --res-bg: #f1f5f9;
+            --res-border: #94a3b8;
+            --res-text-dark: #0f172a;
+        }
+
+        /* =========================================
+           2. TEMA EMAS & TOSCA (Desain Glamor)
+           ========================================= */
+        [data-theme="gold"] {
+            --bg-body: linear-gradient(135deg, #bf953f 0%, #fcf6ba 40%, #b38728 80%, #fbf5b7 100%);
+            --bg-card: linear-gradient(135deg, #0ab0a0 0%, #0056b3 100%);
+            --shadow-out: 0 25px 50px rgba(0, 0, 0, 0.4), 0 10px 20px rgba(0, 0, 0, 0.2);
+            --shadow-in: inset 0 2px 2px rgba(255, 255, 255, 0.3);
+            --text-main: #ffffff; 
+            --text-label: #e0f7fa;
+            --border-light: rgba(255, 255, 255, 0.3);
+            --border-focus: #ffffff;
+            --bg-input: rgba(255, 255, 255, 0.95);
+            --text-input: #0056b3; 
+            --glow-focus: rgba(0, 86, 179, 0.3); 
+            --res-bg: rgba(0, 0, 0, 0.15);
+            --res-border: rgba(255, 255, 255, 0.3);
+            --res-text-dark: #ffeaa7;
+        }
+
+        /* =========================================
+           3. TEMA GELAP (Dark Mode Elegan)
+           ========================================= */
+        [data-theme="dark"] {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --shadow-out: 0 25px 50px rgba(0, 0, 0, 0.7), 0 10px 20px rgba(0, 0, 0, 0.5);
+            --shadow-in: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            --text-main: #f8fafc; 
+            --text-label: #94a3b8;
+            --border-light: #334155;
+            --border-focus: #38bdf8;
+            --bg-input: #0f172a;
+            --text-input: #e0f2fe; 
+            --glow-focus: rgba(56, 189, 248, 0.3);
+            --res-bg: #0f172a;
+            --res-border: #334155;
+            --res-text-dark: #38bdf8;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px 15px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            transition: all 0.4s ease;
+        }
+
+        .container {
+            background: var(--bg-card);
+            width: 100%;
+            max-width: 480px;
+            padding: 25px 20px;
+            border-radius: 20px;
+            border: none; 
+            box-shadow: var(--shadow-out), var(--shadow-in); 
+            backdrop-filter: blur(10px);
+            transition: all 0.4s ease;
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 25px;
+            text-align: center;
+            gap: 12px;
+        }
+
+        .header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            line-height: 1.4;
+            color: var(--text-main);
+        }
+
+        .theme-toggle {
+            align-self: flex-end;
+            background: transparent;
+            border: 2px solid var(--text-main);
+            color: var(--text-main);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+        .theme-toggle:hover {
+            background-color: var(--text-main);
+            color: var(--bg-card);
+        }
+
+        .section-group { margin-bottom: 18px; }
+
+        .section-title {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-transform: uppercase;
+            margin: 0 0 10px 0;
+            padding-left: 10px;
+            border-left: 4px solid var(--text-main);
+            display: flex;
+            align-items: center;
+            letter-spacing: 0.5px;
+            background-color: rgba(128, 128, 128, 0.1);
+            padding: 6px 10px;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .section-title::before {
+            content: "▶";
+            font-size: 0.6rem;
+            margin-right: 8px;
+        }
+
+        .input-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 5px;
+            border-bottom: 1px dashed var(--border-light);
+        }
+
+        .input-row:last-child { border-bottom: none; }
+
+        .input-row label {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-label);
+            flex: 1;
+        }
+
+        .input-row input {
+            width: 135px; 
+            padding: 10px 12px;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            background-color: var(--bg-input);
+            color: var(--text-input);
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace; 
+            text-align: left;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .input-row input::placeholder {
+            color: #94a3b8;
+            font-weight: normal;
+        }
+
+        .input-row input:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 4px var(--glow-focus); 
+            background-color: var(--bg-card); 
+            color: var(--text-main); 
+            transform: translateY(-1px);
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            font-weight: 800;
+            border-radius: 10px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-hitung { background-color: var(--btn-hitung); }
+        .btn-hitung:active { transform: translateY(2px); box-shadow: 0 1px 5px rgba(0,0,0,0.2); }
+
+        .btn-reset { background-color: var(--btn-reset); }
+        .btn-reset:active { transform: translateY(2px); box-shadow: 0 1px 5px rgba(0,0,0,0.2); }
+
+        .hasil-wrapper {
+            margin-top: 30px;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .res-card {
+            background-color: var(--res-bg);
+            border: 1px solid var(--res-border);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+
+        .res-title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--text-label);
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .res-value-large {
+            font-size: 2.5rem;
+            color: var(--res-text-dark);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .res-summary-box {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            color: var(--res-text-dark);
+            line-height: 1.8;
+        }
+
+        .res-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .res-grid .res-card { margin-bottom: 0; }
+        
+        .val-text, .val-orange { 
+            color: var(--res-text-dark); 
+            font-size: 1.2rem; 
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.3;
+        }
+
+        [data-theme="clean"] .val-orange { color: #d97706; } 
+        [data-theme="dark"] .val-orange { color: #f59e0b; }
+    </style>
+</head>
+<body data-theme="clean">
+
+    <div class="container">
+        <div class="header">
+            <h2>ALAT HITUNG WAKTU STERIL<br>GETINGE 2</h2>
+            <button class="theme-toggle" id="btnTheme">☀️ BERSIH</button>
+        </div>
+
+        <form id="dataForm">
+            <div class="section-group">
+                <h3 class="section-title">WAKTU PROSES</h3>
+                <div class="input-row">
+                    <label>Mulai Proses Jam</label>
+                    <input type="text" id="mulaiProses" inputmode="numeric" placeholder="HH:mm:ss" autocomplete="off">
+                </div>
+                <div class="input-row">
+                    <label>Total Waktu Proses</label>
+                    <input type="text" id="totalWaktu" inputmode="numeric" placeholder="HH:mm:ss" autocomplete="off">
+                </div>
+            </div>
+
+            <div class="section-group">
+                <h3 class="section-title">STERIL</h3>
+                <div class="input-row">
+                    <label>Mulai Steril</label>
+                    <input type="text" id="mulaiSteril" inputmode="numeric" placeholder="HH:mm:ss" autocomplete="off">
+                </div>
+                <div class="input-row">
+                    <label>Selesai Steril</label>
+                    <input type="text" id="selesaiSteril" inputmode="numeric" placeholder="HH:mm:ss" autocomplete="off">
+                </div>
+            </div>
+
+            <div class="section-group">
+                <h3 class="section-title">COOLING</h3>
+                <div class="input-row">
+                    <label>Mulai Cooling</label>
+                    <input type="text" id="mulaiCooling" inputmode="numeric" placeholder="HH:mm:ss" autocomplete="off">
+                </div>
+                <div class="input-row">
+                    <label>Selesai Cooling</label>
+                    <input type="text" id="selesaiCooling" inputmode="numeric" placeholder="HH:mm:ss" autocomplete="off">
+                </div>
+            </div>
+
+            <div class="section-group">
+                <h3 class="section-title">SUHU & TEKANAN</h3>
+                <div class="input-row">
+                    <label>Suhu A102</label>
+                    <input type="text" id="suhuA102" inputmode="numeric" placeholder="121.1" autocomplete="off">
+                </div>
+                <div class="input-row">
+                    <label>Suhu A125</label>
+                    <input type="text" id="suhuA125" inputmode="numeric" placeholder="124.0" autocomplete="off">
+                </div>
+                <div class="input-row">
+                    <label>Tekanan A102</label>
+                    <input type="text" id="tekananA102" inputmode="numeric" placeholder="2.950" autocomplete="off">
+                </div>
+                <div class="input-row">
+                    <label>Tekanan A125</label>
+                    <input type="text" id="tekananA125" inputmode="numeric" placeholder="3.150" autocomplete="off">
+                </div>
+            </div>
+
+            <div class="btn-container">
+                <button type="button" class="btn btn-hitung" id="btnHitung">⚡ HITUNG</button>
+                <button type="button" class="btn btn-reset" id="btnReset">↻ RESET</button>
+            </div>
+        </form>
+
+        <div class="hasil-wrapper" id="hasilBox">
+            <h3 class="section-title" style="background: none; border-bottom: 2px solid var(--border-light); padding-left: 0;">HASIL PERHITUNGAN</h3>
+
+            <div class="res-card">
+                <div class="res-title">🕓 SELESAI PROSES STERILISASI JAM</div>
+                <div class="res-value-large" id="resSelesaiBesar">-</div>
+            </div>
+
+            <div class="res-card">
+                <div class="res-title">RINGKASAN</div>
+                <div class="res-summary-box">
+                    <div>Mulai&nbsp;&nbsp;&nbsp;&nbsp;: <span id="resSumMulai">-</span></div>
+                    <div>+ Durasi : <span id="resSumDurasi">-</span></div>
+                    <div style="border-top: 1px dashed var(--border-light); margin: 8px 0;"></div>
+                    <div>Selesai&nbsp;&nbsp;: <span id="resSumSelesai">-</span></div>
+                </div>
+            </div>
+
+            <div class="res-grid">
+                <div class="res-card">
+                    <div class="res-title">WAKTU STERIL</div>
+                    <div class="val-text" id="resSteril">-</div>
+                </div>
+                <div class="res-card">
+                    <div class="res-title">WAKTU COOLING</div>
+                    <div class="val-text" id="resCooling">-</div>
+                </div>
+                <div class="res-card">
+                    <div class="res-title">SELISIH SUHU</div>
+                    <div class="val-orange" id="resSuhu">-</div>
+                </div>
+                <div class="res-card">
+                    <div class="res-title">SELISIH TEKANAN</div>
+                    <div class="val-orange" id="resTekanan">-</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const inputList = [
+            'mulaiProses', 'totalWaktu', 
+            'mulaiSteril', 'selesaiSteril', 
+            'mulaiCooling', 'selesaiCooling', 
+            'suhuA102', 'suhuA125', 
+            'tekananA102', 'tekananA125'
+        ];
+
+        // --- SISTEM 3 TEMA ---
+        const themes = ['clean', 'gold', 'dark'];
+        const themeLabels = ['☀️ BERSIH', '✨ EMAS', '🌙 GELAP'];
+        let currentThemeIdx = 0; 
+
+        const btnTheme = document.getElementById('btnTheme');
+        btnTheme.addEventListener('click', () => {
+            currentThemeIdx = (currentThemeIdx + 1) % themes.length;
+            document.body.setAttribute('data-theme', themes[currentThemeIdx]);
+            btnTheme.textContent = themeLabels[currentThemeIdx];
+        });
+
+        // AUTO FORMAT & SMART BACKSPACE
+        inputList.forEach((id, index) => {
+            const el = document.getElementById(id);
+            const nextEl = inputList[index + 1] ? document.getElementById(inputList[index + 1]) : null;
+            const prevEl = inputList[index - 1] ? document.getElementById(inputList[index - 1]) : null;
+
+            el.addEventListener('input', (e) => {
+                let val = e.target.value.replace(/\D/g, ''); 
+                let isDeleting = e.inputType === 'deleteContentBackward';
+                
+                if (index <= 5) {
+                    val = val.substring(0, 6);
+                    let formatted = '';
+                    if (val.length > 0) formatted += val.substring(0, 2);
+                    if (val.length > 2) formatted += ':' + val.substring(2, 4);
+                    if (val.length > 4) formatted += ':' + val.substring(4, 6);
+                    e.target.value = formatted;
+                    if (formatted.length === 8 && !isDeleting && nextEl) nextEl.focus();
+                } else if (index === 6 || index === 7) {
+                    val = val.substring(0, 4);
+                    if (val.length >= 4) {
+                        e.target.value = val.substring(0, 3) + '.' + val.substring(3, 4);
+                        if (!isDeleting && nextEl) nextEl.focus();
+                    } else {
+                        e.target.value = val;
+                    }
+                } else if (index === 8 || index === 9) {
+                    val = val.substring(0, 4);
+                    if (val.length >= 2) {
+                        e.target.value = val.substring(0, 1) + '.' + val.substring(1, 4);
+                        if (val.length === 4 && !isDeleting && nextEl) nextEl.focus();
+                    } else {
+                        e.target.value = val;
+                    }
+                }
+            });
+
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && el.value === '' && prevEl) {
+                    e.preventDefault();
+                    prevEl.focus();
+                }
+            });
+        });
+
+        // MATEMATIKA WAKTU
+        function parseTime(timeStr) {
+            if (!timeStr || timeStr.length < 8) return 0;
+            let parts = timeStr.split(':');
+            return (parseInt(parts[0]) * 3600) + (parseInt(parts[1]) * 60) + parseInt(parts[2]);
+        }
+
+        function tambahWaktu(startStr, durStr) {
+            if(!startStr || !durStr || startStr.length < 8 || durStr.length < 8) return "-";
+            let totalSec = parseTime(startStr) + parseTime(durStr);
+            let h = Math.floor(totalSec / 3600) % 24; 
+            let m = Math.floor((totalSec % 3600) / 60);
+            let s = totalSec % 60;
+            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function hitungSelisihWaktu(startStr, endStr) {
+            if(!startStr || !endStr || startStr.length < 8 || endStr.length < 8) return "-";
+            let diff = parseTime(endStr) - parseTime(startStr);
+            if (diff < 0) diff += (24 * 3600); 
+
+            let m = Math.floor(diff / 60);
+            let s = diff % 60;
+
+            let result = [];
+            if (m > 0) result.push(`${m} menit`);
+            if (s > 0) result.push(`${s} detik`);
+            
+            return result.length > 0 ? result.join(' ') : "0 detik";
+        }
+
+        // TOMBOL HITUNG
+        const btnHitung = document.getElementById('btnHitung');
+        const btnReset = document.getElementById('btnReset');
+        const hasilBox = document.getElementById('hasilBox');
+
+        btnHitung.addEventListener('click', () => {
+            const mProses = document.getElementById('mulaiProses').value || "-";
+            const tWaktu = document.getElementById('totalWaktu').value || "-";
+            
+            let jamSelesaiProses = tambahWaktu(mProses, tWaktu);
+
+            document.getElementById('resSelesaiBesar').textContent = jamSelesaiProses;
+            document.getElementById('resSumMulai').textContent = mProses;
+            document.getElementById('resSumDurasi').textContent = tWaktu;
+            document.getElementById('resSumSelesai').textContent = jamSelesaiProses;
+
+            const mSteril = document.getElementById('mulaiSteril').value;
+            const sSteril = document.getElementById('selesaiSteril').value;
+            const mCool = document.getElementById('mulaiCooling').value;
+            const sCool = document.getElementById('selesaiCooling').value;
+            
+            document.getElementById('resSteril').innerHTML = hitungSelisihWaktu(mSteril, sSteril).replace(' menit ', ' menit<br>');
+            document.getElementById('resCooling').innerHTML = hitungSelisihWaktu(mCool, sCool).replace(' menit ', ' menit<br>');
+
+            const suhu1 = parseFloat(document.getElementById('suhuA102').value) || 0;
+            const suhu2 = parseFloat(document.getElementById('suhuA125').value) || 0;
+            document.getElementById('resSuhu').textContent = Math.abs(suhu2 - suhu1).toFixed(1) + " °C";
+
+            const tek1 = parseFloat(document.getElementById('tekananA102').value) || 0;
+            const tek2 = parseFloat(document.getElementById('tekananA125').value) || 0;
+            document.getElementById('resTekanan').textContent = Math.abs(tek2 - tek1).toFixed(3) + " bar";
+
+            hasilBox.style.display = 'block';
+            hasilBox.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        });
+
+        // TOMBOL RESET
+        btnReset.addEventListener('click', () => {
+            document.getElementById('dataForm').reset();
+            hasilBox.style.display = 'none';
+            document.getElementById('mulaiProses').focus();
+        });
+
+        // --- REGISTRASI SERVICE WORKER UNTUK PWA ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                .then((registration) => {
+                    console.log('ServiceWorker sukses didaftarkan dengan scope: ', registration.scope);
+                })
+                .catch((error) => {
+                    console.log('Pendaftaran ServiceWorker gagal: ', error);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
