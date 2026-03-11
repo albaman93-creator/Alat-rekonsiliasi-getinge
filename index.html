@@ -308,6 +308,146 @@
             transition: transform 0.2s;
         }
         .info-icon:hover { transform: scale(1.1); }
+
+        /* ===== CUSTOM DIALOG MODAL STYLING ===== */
+        .dialog-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            animation: fadeInOverlay 0.2s ease;
+        }
+        .dialog-overlay.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        @keyframes fadeInOverlay {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+        
+        .dialog-modal {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 32px 28px;
+            max-width: 380px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25), 0 0 1px rgba(0, 0, 0, 0.1);
+            animation: slideInModal 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            text-align: center;
+        }
+        @keyframes slideInModal {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        
+        .dialog-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            animation: bounceIcon 0.5s ease;
+        }
+        @keyframes bounceIcon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        .dialog-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+        }
+        
+        .dialog-message {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        
+        .dialog-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn-dialog {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex: 1;
+            min-width: 140px;
+        }
+        
+        .btn-yes {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        .btn-yes:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+        .btn-yes:active {
+            transform: translateY(0);
+        }
+        
+        .btn-no {
+            background: rgba(229, 231, 235, 0.8);
+            color: var(--text-dark);
+            border: 1px solid rgba(156, 163, 175, 0.3);
+        }
+        .btn-no:hover {
+            background: rgba(209, 213, 219, 0.9);
+            transform: translateY(-2px);
+        }
+        .btn-no:active {
+            transform: translateY(0);
+        }
+        
+        /* Dark theme untuk dialog */
+        [data-theme="dark"] .dialog-modal {
+            background: rgba(31, 41, 55, 0.95);
+            border-color: rgba(107, 114, 128, 0.3);
+        }
+        
+        [data-theme="dark"] .dialog-title {
+            color: #f3f4f6;
+        }
+        
+        [data-theme="dark"] .dialog-message {
+            color: #d1d5db;
+        }
+        
+        [data-theme="dark"] .btn-no {
+            background: rgba(75, 85, 99, 0.6);
+            color: #e5e7eb;
+            border-color: rgba(107, 114, 128, 0.4);
+        }
+        [data-theme="dark"] .btn-no:hover {
+            background: rgba(85, 97, 114, 0.8);
+        }
         .info-icon.critical { background: #ef4444; }
 
         /* Modal Custom Alert */
@@ -879,6 +1019,19 @@
             </div>
         </form>
         </div><!-- end modeManual -->
+
+        <!-- CUSTOM CONFIRM DIALOG MODAL -->
+        <div class="dialog-overlay" id="dialogOverlay">
+            <div class="dialog-modal">
+                <div class="dialog-icon">⚠️</div>
+                <div class="dialog-title">Ada Kolom yang Belum Diisi</div>
+                <div class="dialog-message" id="dialogMessage"></div>
+                <div class="dialog-buttons">
+                    <button class="btn-dialog btn-yes" id="btnDialogYes">✓ Lanjut Isi</button>
+                    <button class="btn-dialog btn-no" id="btnDialogNo">Biarkan Saja</button>
+                </div>
+            </div>
+        </div>
 
         <div class="hasil-wrapper" id="hasilBox">
             <h3 class="section-title" style="background: none; border-bottom: 2px solid var(--border-light); padding-left: 0;">HASIL PERHITUNGAN</h3>
@@ -1660,38 +1813,75 @@
             return emptyFields;
         }
 
-        // Bersihkan tanda empty saat user mulai mengetik
-        document.querySelectorAll('#mulaiProses,#totalWaktu,#mulaiSteril,#selesaiSteril,#mulaiCooling,#selesaiCooling,#suhuA102,#suhuA125,#tekananA106,#tekananA129').forEach(el => {
+        // Function untuk menampilkan custom confirm dialog
+        function showConfirmDialog(emptyFields) {
+            const dialogOverlay = document.getElementById('dialogOverlay');
+            const dialogMessage = document.getElementById('dialogMessage');
+            const btnYes = document.getElementById('btnDialogYes');
+            const btnNo = document.getElementById('btnDialogNo');
+            
+            // Format pesan field yang kosong
+            const fieldNames = emptyFields.map(f => f.label).join('\n');
+            dialogMessage.textContent = `${fieldNames}`;
+            
+            // Show dialog
+            dialogOverlay.classList.add('show');
+            
+            // Setup button handlers
+            const handleYes = () => {
+                dialogOverlay.classList.remove('show');
+                const firstEmpty = emptyFields[0];
+                firstEmpty.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => firstEmpty.el.focus(), 300);
+                cleanupHandlers();
+            };
+            
+            const handleNo = () => {
+                dialogOverlay.classList.remove('show');
+                cleanupHandlers();
+            };
+            
+            const cleanupHandlers = () => {
+                btnYes.removeEventListener('click', handleYes);
+                btnNo.removeEventListener('click', handleNo);
+                document.removeEventListener('keydown', handleEscape);
+            };
+            
+            const handleEscape = (e) => {
+                if (e.key === 'Escape') {
+                    handleNo();
+                }
+            };
+            
+            btnYes.addEventListener('click', handleYes);
+            btnNo.addEventListener('click', handleNo);
+            document.addEventListener('keydown', handleEscape);
+        }
+
+        // Bersihkan tanda empty saat user mulai mengetik + Hide keyboard saat field terakhir
+        const allInputFields = document.querySelectorAll('#mulaiProses,#totalWaktu,#mulaiSteril,#selesaiSteril,#mulaiCooling,#selesaiCooling,#suhuA102,#suhuA125,#tekananA106,#tekananA129');
+        allInputFields.forEach((el, idx) => {
             el.addEventListener('input', () => {
                 if (el.value.trim() !== '') {
                     el.classList.remove('input-empty');
                     const lbl = el.closest('.input-row')?.querySelector('label');
                     if (lbl) lbl.classList.remove('label-empty');
-                    // Sembunyikan banner jika semua sudah terisi
-                    // Banner akan otomatis hilang setelah beberapa detik
+                }
+                
+                // Hide keyboard ketika field terakhir diisi
+                if (el.id === 'tekananA129' && el.value.trim() !== '') {
+                    el.blur();
                 }
             });
         });
 
         btnHitung.addEventListener('click', () => {
-            // Tampilkan peringatan field kosong — tapi TETAP lanjut hitung
+            // Detect empty fields tapi JANGAN langsung focus ke mereka
             const emptyFields = markEmptyFields();
             const banner = document.getElementById('warningBanner');
-            const bannerText = document.getElementById('warningBannerText');
-
-            if (emptyFields.length > 0) {
-                const names = emptyFields.map(f => f.label).join(', ');
-                bannerText.textContent = `Kolom belum diisi: ${names}`;
-                banner.classList.add('show');
-                // Hanya got fokus ke field kosong pertama, tidak memblokir
-                emptyFields[0].el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                setTimeout(() => emptyFields[0].el.focus(), 300);
-                // Auto sembunyikan banner setelah 5 detik
-                clearTimeout(window._bannerTimeout);
-                window._bannerTimeout = setTimeout(() => banner.classList.remove('show'), 5000);
-            } else {
-                banner.classList.remove('show');
-            }
+            
+            // Sembunyikan banner warning
+            banner.classList.remove('show');
 
             // Lanjut hitung tanpa peduli kosong atau tidak
             const mProses = document.getElementById('mulaiProses').value || "-";
@@ -1768,6 +1958,13 @@
 
             hasilBox.style.display = 'block';
             hasilBox.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            
+            // Setelah hasil ditampilkan, tampilkan dialog jika ada empty fields
+            setTimeout(() => {
+                if (emptyFields.length > 0) {
+                    showConfirmDialog(emptyFields);
+                }
+            }, 800);
         });
 
         // TOMBOL RESET
