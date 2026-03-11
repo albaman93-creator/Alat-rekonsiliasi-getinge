@@ -10,25 +10,29 @@
     <link rel="apple-touch-icon" href="./icon-192.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <!-- OCR Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <style>
         /* =========================================
-           1. TEMA WHITE (Bersih) bedaa
+           1. TEMA WHITE (Bersih) 
            ========================================= */
         :root {
-            --bg-body: #5865F2; 
-            --bg-card: #ffffff; 
-            --shadow-out: 0 20px 40px rgba(30, 58, 138, 0.1), 0 5px 15px rgba(30, 58, 138, 0.05);
-            --shadow-in: inset 0 2px 0px rgba(255, 255, 255, 1);
+            /* TEMA WHITE GLOSSY */
+            --bg-body: radial-gradient(circle at 50% 50%, #ffffff 0%, #f0f2f5 50%, #e2e8f0 100%);
+            --bg-card: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.8) 100%);
+            --shadow-out: 0 20px 40px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.05);
+            --shadow-in: inset 0 2px 4px rgba(255, 255, 255, 1), inset -2px -2px 4px rgba(0, 0, 0, 0.05);
             --text-main: #1e3a8a; 
             --text-label: #334155;
-            --border-light: #cbd5e1;
+            --border-light: rgba(203, 213, 225, 0.5);
             --border-focus: #2563eb;
             --bg-input: #f8fafc;
             --text-input: #0f172a; 
             --glow-focus: rgba(37, 99, 235, 0.2); 
             --btn-hitung: #10b981; 
             --btn-reset: #ef4444;  
-            --res-bg: #f1f5f9;
+            --res-bg: rgba(241, 245, 249, 0.8);
             --res-border: #94a3b8;
             --res-text-dark: #0f172a;
         }
@@ -91,11 +95,26 @@
             max-width: 480px;
             padding: 25px 20px;
             border-radius: 20px;
-            border: none; 
+            border: 1px solid rgba(255, 255, 255, 0.6); 
             box-shadow: var(--shadow-out), var(--shadow-in); 
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             transition: all 0.4s ease;
-            margin-bottom: 80px; /* Spacer agar banner install tidak menutupi tombol bawah */
+            margin-bottom: 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            pointer-events: none;
         }
 
         .header {
@@ -204,6 +223,155 @@
             transform: translateY(-1px);
         }
 
+        /* Gaya Validasi Error */
+        .input-error {
+            border-color: var(--btn-reset) !important;
+            background-color: rgba(239, 68, 68, 0.1) !important;
+            color: var(--btn-reset) !important;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2) !important;
+        }
+
+        /* Field kosong yang wajib diisi */
+        .input-empty {
+            border-color: #f97316 !important;
+            background-color: rgba(249, 115, 22, 0.08) !important;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.25) !important;
+            animation: shakeField 0.4s ease;
+        }
+        .input-empty::placeholder { color: #f97316 !important; opacity: 1; }
+
+        @keyframes shakeField {
+            0%,100% { transform: translateX(0); }
+            20%      { transform: translateX(-6px); }
+            40%      { transform: translateX(6px); }
+            60%      { transform: translateX(-4px); }
+            80%      { transform: translateX(4px); }
+        }
+
+        /* Label baris kosong */
+        .label-empty {
+            color: #f97316 !important;
+            font-weight: 800 !important;
+        }
+        .label-empty::after {
+            content: ' ✱';
+            color: #ef4444;
+            font-size: 0.85em;
+        }
+
+        /* Banner peringatan di bawah tombol — info ringan, bisa diabaikan */
+        .warning-banner {
+            display: none;
+            background: rgba(249, 115, 22, 0.07);
+            border: 1.5px dashed #f97316;
+            border-radius: 8px;
+            padding: 7px 12px;
+            margin-top: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #c2410c;
+            align-items: flex-start;
+            gap: 6px;
+            animation: fadeInBanner 0.25s ease;
+        }
+        .warning-banner.show { display: flex; }
+        @keyframes fadeInBanner {
+            from { opacity: 0; transform: translateY(4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        [data-theme="dark"] .warning-banner {
+            background: rgba(249, 115, 22, 0.08);
+            border-color: #f97316;
+            color: #fdba74;
+        }
+
+        /* Peringatan Hasil */
+        .text-warning { color: #f59e0b !important; }
+        .text-critical { color: #ef4444 !important; }
+        
+        .info-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            background: #f59e0b;
+            color: white;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: 800;
+            margin-left: 8px;
+            cursor: pointer;
+            border: none;
+            display: none; /* Sembunyi secara default */
+            vertical-align: middle;
+            transition: transform 0.2s;
+        }
+        .info-icon:hover { transform: scale(1.1); }
+        .info-icon.critical { background: #ef4444; }
+
+        /* Modal Custom Alert */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 24px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            border: 1px solid var(--border-light);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+        .modal-alert-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        .modal-description {
+            color: var(--text-main);
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .modal-btn {
+            background: var(--btn-hitung);
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
         .btn-container {
             display: flex;
             gap: 12px;
@@ -217,19 +385,55 @@
             color: white;
             font-size: 1rem;
             font-weight: 800;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
             text-transform: uppercase;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15), inset 0 -4px 0 rgba(0,0,0,0.2), inset 0 2px 0 rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
         }
 
-        .btn-hitung { background-color: var(--btn-hitung); }
-        .btn-hitung:active { transform: translateY(2px); box-shadow: 0 1px 5px rgba(0,0,0,0.2); }
+        .btn::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -100%;
+            width: 50%;
+            height: 200%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transform: skewX(-20deg);
+            transition: 0.5s;
+        }
 
-        .btn-reset { background-color: var(--btn-reset); }
-        .btn-reset:active { transform: translateY(2px); box-shadow: 0 1px 5px rgba(0,0,0,0.2); }
+        .btn:hover::after {
+            left: 150%;
+        }
+
+        .btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2), inset 0 -1px 0 rgba(0,0,0,0.1);
+        }
+
+        .btn-hitung { 
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+        }
+        
+        .btn-reset { 
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); 
+        }
+
+        /* Animasi Kilatan Otomatis */
+        @keyframes shinny {
+            0% { left: -100%; }
+            20% { left: 150%; }
+            100% { left: 150%; }
+        }
+
+        .btn-hitung::after {
+            animation: shinny 4s infinite ease-in-out;
+        }
 
         .hasil-wrapper {
             margin-top: 30px;
@@ -333,6 +537,215 @@
             background: transparent; color: #94a3b8; border: none; font-size: 1.2rem;
             cursor: pointer; padding: 0 0 0 5px; font-weight: bold;
         }
+
+        /* =========================================
+           OCR SCAN MODE
+           ========================================= */
+        .mode-switcher {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            background: rgba(0,0,0,0.06);
+            border-radius: 12px;
+            padding: 5px;
+        }
+        .mode-btn {
+            flex: 1;
+            padding: 10px 8px;
+            border: none;
+            border-radius: 9px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: transparent;
+            color: var(--text-label);
+            letter-spacing: 0.3px;
+        }
+        .mode-btn.active {
+            background: var(--bg-card);
+            color: var(--text-main);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .mode-content { display: none; }
+        .mode-content.active { display: block; }
+
+        /* Upload Zone */
+        .upload-zone {
+            border: 2.5px dashed var(--border-focus);
+            border-radius: 16px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(37, 99, 235, 0.04);
+            position: relative;
+        }
+        .upload-zone:hover, .upload-zone.drag-over {
+            background: rgba(37, 99, 235, 0.1);
+            border-color: var(--btn-hitung);
+            transform: scale(1.01);
+        }
+        .upload-zone .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            animation: floatIcon 2.5s ease-in-out infinite;
+        }
+        @keyframes floatIcon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .upload-zone h4 {
+            margin: 0 0 6px 0;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            font-weight: 800;
+        }
+        .upload-zone p {
+            margin: 0;
+            font-size: 0.78rem;
+            color: var(--text-label);
+        }
+        .upload-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+        .upload-preview {
+            width: 100%;
+            max-height: 180px;
+            object-fit: contain;
+            border-radius: 10px;
+            margin-top: 14px;
+            display: none;
+        }
+
+        /* OCR Loader */
+        .ocr-loader {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+        .ocr-loader.active { display: flex; }
+        .ocr-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--border-light);
+            border-top-color: var(--border-focus);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .ocr-progress-bar-wrap {
+            width: 100%;
+            background: var(--border-light);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+        }
+        .ocr-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #10b981, #2563eb);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        .ocr-status-text {
+            font-size: 0.8rem;
+            color: var(--text-label);
+            font-weight: 700;
+        }
+
+        /* OCR Result Panel */
+        .ocr-result-panel {
+            display: none;
+            margin-top: 16px;
+            border: 1.5px solid var(--border-light);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .ocr-result-panel.active { display: block; }
+        .ocr-result-header {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 10px 14px;
+            font-size: 0.82rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .ocr-result-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .ocr-result-table tr {
+            border-bottom: 1px solid var(--border-light);
+        }
+        .ocr-result-table tr:last-child { border-bottom: none; }
+        .ocr-result-table td {
+            padding: 8px 12px;
+            font-size: 0.8rem;
+        }
+        .ocr-result-table .field-name {
+            color: var(--text-label);
+            font-weight: 700;
+            width: 55%;
+        }
+        .ocr-result-table .field-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+        .field-val.found { color: #10b981; }
+        .field-val.notfound { color: #94a3b8; font-style: italic; font-size: 0.75rem; }
+        .ocr-apply-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+        }
+        .ocr-apply-btn:hover {
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+            transform: translateY(-1px);
+        }
+        .ocr-retry-btn {
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            color: var(--text-label);
+            border: 1.5px solid var(--border-light);
+            border-radius: 0 0 14px 14px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: -1px;
+        }
+        .ocr-retry-btn:hover { background: rgba(0,0,0,0.05); }
+        .ocr-tip {
+            background: rgba(251, 191, 36, 0.12);
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 0.78rem;
+            color: #92400e;
+            margin-top: 14px;
+            line-height: 1.5;
+        }
+        [data-theme="dark"] .ocr-tip { color: #fde68a; }
     </style>
 </head>
 <body data-theme="clean">
@@ -345,8 +758,17 @@
                 <p>Anda dapat memasang aplikasi di ponsel agar bisa di pakai offline</p>
             </div>
         </div>
-        <button id="btnInstallApp" class="btn-install-app">INSTALL</button>
-        <button id="btnCloseInstall" class="btn-close-install">✖</button>
+        <button id="btnInstallApp" class="banner-btn">Instal</button>
+        <button id="btnCloseInstall" class="banner-close">Nanti</button>
+    </div>
+
+    <!-- Modal Custom Alert -->
+    <div id="customAlert" class="modal-overlay">
+        <div class="modal-content">
+            <div id="modalIcon" class="modal-alert-icon">⚠️</div>
+            <p id="alertDescription" class="modal-description"></p>
+            <button onclick="closeAlert()" class="modal-btn">SAYA MENGERTI</button>
+        </div>
     </div>
 
     <div class="container">
@@ -355,15 +777,50 @@
             <button class="theme-toggle" id="btnTheme">☀️ WHITE</button>
         </div>
 
+        <!-- MODE SWITCHER -->
+        <div class="mode-switcher">
+            <button type="button" class="mode-btn active" id="btnModeManual" onclick="switchMode('manual')">✍️ Input Manual</button>
+            <button type="button" class="mode-btn" id="btnModeScan" onclick="switchMode('scan')">📷 Scan Gambar / PDF</button>
+        </div>
+
+        <!-- SCAN MODE UI -->
+        <div class="mode-content" id="modeScan">
+            <div class="upload-zone" id="uploadZone">
+                <input type="file" id="fileInput" accept="image/*,application/pdf" multiple onchange="handleFileUpload(event)">
+                <div class="upload-icon">📄</div>
+                <h4>Upload Gambar atau PDF</h4>
+                <p>Klik di sini atau drag &amp; drop file<br><strong>JPG, PNG, PDF</strong> — bisa pilih <strong>beberapa foto</strong> sekaligus</p>
+            </div>
+            <div id="uploadPreviewContainer" style="display:none; margin-top:14px; display:none;"></div>
+            <div class="ocr-loader" id="ocrLoader">
+                <div class="ocr-spinner"></div>
+                <div style="width:100%">
+                    <div class="ocr-progress-bar-wrap">
+                        <div class="ocr-progress-bar" id="ocrProgressBar"></div>
+                    </div>
+                </div>
+                <div class="ocr-status-text" id="ocrStatusText">Memproses gambar...</div>
+            </div>
+            <div class="ocr-result-panel" id="ocrResultPanel">
+                <div class="ocr-result-header">✅ Data Berhasil Diekstrak — Periksa Sebelum Mengisi Form</div>
+                <table class="ocr-result-table" id="ocrResultTable"></table>
+                <button class="ocr-apply-btn" onclick="applyOcrResults()">⚡ ISI FORM OTOMATIS</button>
+                <button class="ocr-retry-btn" onclick="resetUpload()">🔄 Upload Ulang</button>
+            </div>
+            <div class="ocr-tip">💡 <strong>Tips:</strong> Pastikan gambar/foto jelas dan tidak buram. Foto langsung dari print-out mesin Getinge akan memberikan hasil terbaik. Nilai yang tidak terdeteksi bisa diisi manual.</div>
+        </div>
+
+        <!-- MANUAL MODE -->
+        <div class="mode-content active" id="modeManual">
         <form id="dataForm">
             <div class="section-group">
                 <h3 class="section-title">WAKTU PROSES</h3>
                 <div class="input-row">
-                    <label>Mulai Proses Jam</label>
+                    <label>Start Jam</label>
                     <input type="text" id="mulaiProses" inputmode="numeric" placeholder="HH:mm:ss" autocomplete="off">
                 </div>
                 <div class="input-row">
-                    <label>Total Waktu Proses</label>
+                    <label>Total durasi sterilisasi</label>
                     <input type="text" id="totalWaktu" inputmode="numeric" placeholder="HH:mm:ss" autocomplete="off">
                 </div>
             </div>
@@ -416,7 +873,12 @@
                 <button type="button" class="btn btn-hitung" id="btnHitung">⚡ HITUNG</button>
                 <button type="button" class="btn btn-reset" id="btnReset">↻ RESET</button>
             </div>
+            <div class="warning-banner" id="warningBanner">
+                <span style="font-size:1.1rem">✍️</span>
+                <span id="warningBannerText"></span>
+            </div>
         </form>
+        </div><!-- end modeManual -->
 
         <div class="hasil-wrapper" id="hasilBox">
             <h3 class="section-title" style="background: none; border-bottom: 2px solid var(--border-light); padding-left: 0;">HASIL PERHITUNGAN</h3>
@@ -431,6 +893,7 @@
                 <div class="res-summary-box">
                     <div>Mulai&nbsp;&nbsp;&nbsp;&nbsp;: <span id="resSumMulai">-</span></div>
                     <div>+ Durasi : <span id="resSumDurasi">-</span></div>
+                    <div>+ Lama Heat Up : <span id="resSumHeatUp">-</span></div>
                     <div style="border-top: 1px dashed var(--border-light); margin: 8px 0;"></div>
                     <div>Selesai&nbsp;&nbsp;: <span id="resSumSelesai">-</span></div>
                 </div>
@@ -446,11 +909,11 @@
                     <div class="val-text" id="resCooling">-</div>
                 </div>
                 <div class="res-card">
-                    <div class="res-title">SELISIH SUHU</div>
+                    <div class="res-title">SELISIH SUHU <button class="info-icon" id="infoSuhu" onclick="showAlert('suhu')">!</button></div>
                     <div class="val-orange" id="resSuhu">-</div>
                 </div>
                 <div class="res-card">
-                    <div class="res-title">SELISIH TEKANAN</div>
+                    <div class="res-title">SELISIH TEKANAN <button class="info-icon" id="infoTekanan" onclick="showAlert('tekanan')">!</button></div>
                     <div class="val-orange" id="resTekanan">-</div>
                 </div>
             </div>
@@ -458,6 +921,577 @@
     </div>
 
     <script>
+        // ==========================================
+        // PDF.js Worker Config
+        // ==========================================
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+
+        // ==========================================
+        // MODE SWITCHER
+        // ==========================================
+        function switchMode(mode) {
+            const manual = document.getElementById('modeManual');
+            const scan = document.getElementById('modeScan');
+            const btnManual = document.getElementById('btnModeManual');
+            const btnScan = document.getElementById('btnModeScan');
+            if (mode === 'manual') {
+                manual.classList.add('active');
+                scan.classList.remove('active');
+                btnManual.classList.add('active');
+                btnScan.classList.remove('active');
+            } else {
+                scan.classList.add('active');
+                manual.classList.remove('active');
+                btnScan.classList.add('active');
+                btnManual.classList.remove('active');
+            }
+        }
+
+        // Drag and Drop (multi-file)
+        const uploadZone = document.getElementById('uploadZone');
+        uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('drag-over');
+            const files = Array.from(e.dataTransfer.files);
+            if (files.length > 0) processFiles(files);
+        });
+
+        // ==========================================
+        // OCR: STORAGE HASIL
+        // ==========================================
+        let ocrExtracted = {};
+
+        const fieldLabels = {
+            mulaiProses:    'Start Jam (Mulai Proses)',
+            totalWaktu:     'Total Durasi Sterilisasi',
+            mulaiSteril:    'Mulai Steril',
+            selesaiSteril:  'Selesai Steril',
+            mulaiCooling:   'Mulai Cooling',
+            selesaiCooling: 'Selesai Cooling',
+            suhuA102:       'Suhu A102 (°C)',
+            suhuA125:       'Suhu A125 (°C)',
+            tekananA106:    'Tekanan A106 (bar)',
+            tekananA129:    'Tekanan A129 (bar)',
+        };
+
+        // ==========================================
+        // FILE UPLOAD HANDLER (multi-file)
+        // ==========================================
+        function handleFileUpload(event) {
+            const files = Array.from(event.target.files);
+            if (files.length > 0) processFiles(files);
+        }
+
+        async function processFiles(files) {
+            // Validasi ukuran
+            for (const f of files) {
+                if (f.size > 15 * 1024 * 1024) {
+                    alert(`File "${f.name}" terlalu besar! Maksimum 15MB per file.`);
+                    return;
+                }
+            }
+
+            document.getElementById('ocrResultPanel').classList.remove('active');
+            document.getElementById('ocrLoader').classList.add('active');
+            document.getElementById('ocrProgressBar').style.width = '0%';
+            document.getElementById('ocrStatusText').textContent = `Memproses ${files.length} file...`;
+
+            // Tampilkan preview semua gambar
+            const previewContainer = document.getElementById('uploadPreviewContainer');
+            previewContainer.innerHTML = '';
+            previewContainer.style.display = 'none';
+            const imageFiles = files.filter(f => f.type !== 'application/pdf');
+            if (imageFiles.length > 0) {
+                previewContainer.style.display = 'flex';
+                previewContainer.style.flexWrap = 'wrap';
+                previewContainer.style.gap = '8px';
+                imageFiles.forEach(f => {
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(f);
+                    img.style.cssText = 'max-height:120px; max-width:calc(50% - 4px); border-radius:8px; object-fit:contain; border:1.5px solid var(--border-light);';
+                    previewContainer.appendChild(img);
+                });
+            }
+
+            try {
+                let combinedText = '';
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    setOcrStatus(`File ${i + 1}/${files.length}: "${file.name}"...`, Math.round((i / files.length) * 100));
+                    let text = '';
+                    if (file.type === 'application/pdf') {
+                        text = await extractTextFromPDF(file);
+                    } else {
+                        text = await extractTextFromImage(file);
+                    }
+                    combinedText += text + '\n';
+                }
+                const extracted = parseOcrText(combinedText);
+                showOcrResults(extracted, combinedText);
+            } catch (err) {
+                console.error('OCR Error:', err);
+                document.getElementById('ocrLoader').classList.remove('active');
+                document.getElementById('ocrStatusText').textContent = 'Gagal memproses file.';
+                alert('Terjadi kesalahan saat memproses file. Pastikan file tidak rusak.');
+            }
+        }
+
+        // ==========================================
+        // IMAGE OCR via Tesseract.js
+        // ==========================================
+        // Pre-proses gambar: tingkatkan kontras & sharpness untuk print-out dot matrix
+        async function preprocessImage(file) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    // Scale up 2x untuk akurasi OCR lebih baik
+                    const scale = img.width < 1200 ? 2.0 : 1.5;
+                    canvas.width  = img.width  * scale;
+                    canvas.height = img.height * scale;
+                    const ctx = canvas.getContext('2d');
+
+                    // Render gambar dengan upscaling
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    // Ambil pixel data
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imageData.data;
+
+                    // Konversi ke grayscale + tingkatkan kontras (threshold adaptif)
+                    for (let i = 0; i < data.length; i += 4) {
+                        // Grayscale
+                        const gray = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+                        // Tingkatkan kontras: push ke hitam/putih
+                        // Threshold 128: di bawah → lebih gelap, di atas → lebih terang
+                        const enhanced = gray < 160 ? Math.max(0, gray * 0.6) : Math.min(255, gray * 1.2);
+                        data[i] = data[i+1] = data[i+2] = enhanced;
+                        data[i+3] = 255;
+                    }
+                    ctx.putImageData(imageData, 0, 0);
+
+                    // Return sebagai blob
+                    canvas.toBlob(resolve, 'image/png');
+                };
+                img.src = URL.createObjectURL(file);
+            });
+        }
+
+        async function extractTextFromImage(file) {
+            setOcrStatus('Memproses gambar...', 5);
+
+            // Pre-process gambar untuk meningkatkan akurasi OCR
+            const processedBlob = await preprocessImage(file);
+
+            setOcrStatus('Menjalankan OCR...', 15);
+            const result = await Tesseract.recognize(processedBlob, 'eng', {
+                logger: (m) => {
+                    if (m.status === 'recognizing text') {
+                        const pct = Math.round(m.progress * 75) + 15;
+                        setOcrStatus('Membaca teks... ' + Math.round(m.progress * 100) + '%', pct);
+                    }
+                },
+                tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz :./-_',
+                tessedit_pageseg_mode: '6',   // PSM 6: Assume uniform block of text (baik untuk tabel)
+                preserve_interword_spaces: '1',
+            });
+            setOcrStatus('Selesai!', 100);
+
+            // Log raw text untuk debug
+            console.log('=== RAW OCR (preprocessed) ===');
+            console.log(result.data.text);
+            return result.data.text;
+        }
+
+        // ==========================================
+        // PDF TEXT EXTRACTION via PDF.js
+        // ==========================================
+        async function extractTextFromPDF(file) {
+            setOcrStatus('Membuka PDF...', 5);
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            const totalPages = pdf.numPages;
+
+            // Cek apakah PDF punya teks atau hanya gambar scan
+            const firstPage = await pdf.getPage(1);
+            const firstContent = await firstPage.getTextContent();
+            const firstText = firstContent.items.map(item => item.str).join(' ').trim();
+            const isImagePDF = firstText.length < 20;
+
+            let fullText = '';
+
+            if (isImagePDF) {
+                // PDF berupa scan gambar → render tiap halaman ke canvas lalu OCR
+                for (let i = 1; i <= totalPages; i++) {
+                    setOcrStatus(`OCR halaman ${i} dari ${totalPages}...`, Math.round(((i - 1) / totalPages) * 85) + 10);
+                    const page = await pdf.getPage(i);
+                    const viewport = page.getViewport({ scale: 2 });
+                    const canvas = document.createElement('canvas');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+                    const imgData = canvas.toDataURL('image/png');
+                    // OCR gambar halaman ini
+                    const result = await Tesseract.recognize(imgData, 'eng+ind', {
+                        logger: (m) => {
+                            if (m.status === 'recognizing text') {
+                                const base = Math.round(((i - 1) / totalPages) * 85) + 10;
+                                const add = Math.round((m.progress * 85) / totalPages);
+                                setOcrStatus(`OCR hal. ${i}/${totalPages}: ${Math.round(m.progress * 100)}%`, base + add);
+                            }
+                        }
+                    });
+                    fullText += result.data.text + '\n';
+                }
+            } else {
+                // PDF punya teks → ekstrak langsung dari semua halaman
+                for (let i = 1; i <= totalPages; i++) {
+                    setOcrStatus(`Membaca halaman ${i} dari ${totalPages}...`, Math.round((i / totalPages) * 85) + 10);
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    fullText += content.items.map(item => item.str).join(' ') + '\n';
+                }
+            }
+
+            setOcrStatus('Selesai!', 100);
+            return fullText;
+        }
+
+        function setOcrStatus(msg, pct) {
+            document.getElementById('ocrStatusText').textContent = msg;
+            document.getElementById('ocrProgressBar').style.width = pct + '%';
+        }
+
+        // ==========================================
+        // PARSER: Ekstrak nilai dari teks OCR — Format Getinge
+        // ==========================================
+        function parseOcrText(text) {
+            console.log('=== RAW OCR TEXT ===');
+            console.log(text);
+
+            const result = {};
+
+            // NORMALISASI TEKS
+            let norm = text
+                .replace(/\r/g, '')
+                .replace(/,/g, '.')
+                .replace(/[ \t]+/g, ' ');
+
+            // Fix OCR noise: huruf mirip angka di antara digit
+            norm = norm
+                .replace(/(?<=\d)O(?=\d)/g, '0')
+                .replace(/(?<=\d)o(?=\d)/g, '0')
+                .replace(/(?<=\d)l(?=\d)/g, '1')
+                .replace(/(?<=\d)I(?=\d)/g, '1');
+
+            const lines = norm.split(/\n/).map(l => l.trim()).filter(l => l.length > 0);
+
+            // Helper: cari waktu HH:MM:SS dalam string
+            function findTime(str) {
+                if (!str) return null;
+                const m = str.match(/\b(\d{2})[:. ](\d{2})[:. ](\d{2})\b/);
+                if (m) {
+                    const h = parseInt(m[1]), mn = parseInt(m[2]), s = parseInt(m[3]);
+                    if (h <= 23 && mn <= 59 && s <= 59)
+                        return m[1] + ':' + m[2] + ':' + m[3];
+                }
+                return null;
+            }
+
+            // Helper: apakah baris adalah baris data PROGTIME
+            // Toleran terhadap berbagai format OCR: 00:23:49 / 00.23.49 / 00 23 49
+            function isDataRow(str) {
+                // Format standar
+                if (/^\d{2}[:.]\d{2}[:.]\d{2}/.test(str)) return true;
+                // OCR kadang membaca spasi sebagai separator waktu
+                if (/^\d{2} \d{2} \d{2}\b/.test(str)) return true;
+                return false;
+            }
+
+            // Helper: cari baris data pertama setelah index i
+            function firstDataRowAfter(idx, maxSearch) {
+                const limit = Math.min(idx + (maxSearch || 15), lines.length);
+                for (let j = idx + 1; j < limit; j++) {
+                    if (isDataRow(lines[j])) return { row: lines[j], idx: j };
+                }
+                return null;
+            }
+
+            // Helper: parse kolom numerik dari baris data Getinge
+            // Format baris: "00:38:49  3.130 3.110  121.9 122.0 122.1 122.0 120.9 120.9  21.0"
+            // Kolom setelah PROGTIME: AI06(0) AI29(1) AI00(2) AI24(3) AI02(4) AI25(5) AI08(6) AI27(7) F000(8)
+            function parseDataColumns(row) {
+                const noTime = row.replace(/^\d{2}[:. ]\d{2}[:. ]\d{2}\s*/, '');
+                const nums = (noTime.match(/\d+\.\d+/g) || []).map(Number);
+                console.log('DataCols:', noTime.trim(), '→', nums);
+                return nums;
+            }
+
+            // Helper: match section header dengan toleransi OCR noise
+            function matchSection(line, keyword) {
+                const nl = line.toLowerCase().replace(/\s+/g, '');
+                const nk = keyword.toLowerCase().replace(/\s+/g, '');
+                if (nl.includes(nk)) return true;
+                // Cek setiap kata kunci ada di baris (partial min 4 karakter)
+                const words = keyword.toLowerCase().split(/\s+/);
+                return words.every(w => line.toLowerCase().includes(w.substring(0, Math.max(4, w.length - 1))));
+            }
+
+            // 1. PROCESS START → mulaiProses  (Page 1)
+            //    Format: "PROCESS START  : 03:50:33"
+            for (let i = 0; i < lines.length; i++) {
+                if (matchSection(lines[i], 'PROCESS START')) {
+                    const m = lines[i].match(/:\s*(\d{2})[.:](\d{2})[.:](\d{2})/);
+                    if (m) {
+                        result.mulaiProses = m[1] + ':' + m[2] + ':' + m[3];
+                    } else {
+                        result.mulaiProses = findTime(lines[i + 1] || '');
+                    }
+                    if (result.mulaiProses) { console.log('mulaiProses:', result.mulaiProses); break; }
+                }
+            }
+
+            // 2. PROCESS COMPLETE → totalWaktu  (Page 2)
+            //    Label diikuti baris data: "01:06:00  1.023 1.006 ..."
+            for (let i = 0; i < lines.length; i++) {
+                if (matchSection(lines[i], 'PROCESS COMPLETE')) {
+                    const t = findTime(lines[i]);
+                    if (t) {
+                        result.totalWaktu = t;
+                    } else {
+                        const next = firstDataRowAfter(i, 3);
+                        if (next) result.totalWaktu = findTime(next.row);
+                    }
+                    if (result.totalWaktu) { console.log('totalWaktu:', result.totalWaktu); break; }
+                }
+            }
+
+            // 3. FAN STERILIZING → mulaiSteril
+            for (let i = 0; i < lines.length; i++) {
+                if (matchSection(lines[i], 'FAN STERILIZING')) {
+                    // Coba baris data normal di bawah header
+                    const found = firstDataRowAfter(i);
+                    if (found) {
+                        result.mulaiSteril = findTime(found.row);
+                    }
+                    // Fallback: waktu mungkin tergabung dalam baris header (OCR merge)
+                    if (!result.mulaiSteril) {
+                        result.mulaiSteril = findTime(lines[i]);
+                    }
+                    // Fallback 2: cari baris berikutnya yang mengandung waktu meski bukan di awal
+                    if (!result.mulaiSteril) {
+                        for (let j = i + 1; j < Math.min(i + 8, lines.length); j++) {
+                            const t = findTime(lines[j]);
+                            if (t) { result.mulaiSteril = t; break; }
+                        }
+                    }
+                    console.log('mulaiSteril:', result.mulaiSteril);
+                    break;
+                }
+            }
+
+            // 4. POSTTREATMENT → selesaiSteril + suhu + tekanan
+            //    Kolom: PROGTIME | AI06(0) | AI29(1) | AI00(2) | AI24(3) | AI02(4) | AI25(5) | AI08(6) | AI27(7) | F000(8)
+            for (let i = 0; i < lines.length; i++) {
+                if (matchSection(lines[i], 'POSTTREATMENT')) {
+                    const found = firstDataRowAfter(i);
+                    if (found) {
+                        result.selesaiSteril = findTime(found.row);
+                        const nums = parseDataColumns(found.row);
+
+                        if (nums[0] !== undefined && nums[0] >= 1.0 && nums[0] <= 6.0)
+                            result.tekananA106 = nums[0].toFixed(3);
+                        if (nums[1] !== undefined && nums[1] >= 1.0 && nums[1] <= 6.0)
+                            result.tekananA129 = nums[1].toFixed(3);
+                        if (nums[4] !== undefined && nums[4] >= 100 && nums[4] <= 145)
+                            result.suhuA102 = nums[4].toFixed(1);
+                        if (nums[5] !== undefined && nums[5] >= 100 && nums[5] <= 145)
+                            result.suhuA125 = nums[5].toFixed(1);
+
+                        console.log('POSTTREATMENT selesaiSteril:', result.selesaiSteril,
+                            'A106:', result.tekananA106, 'A129:', result.tekananA129,
+                            'A102:', result.suhuA102, 'A125:', result.suhuA125);
+                    }
+                    break;
+                }
+            }
+
+            // 5. FAN COOLING → mulaiCooling
+            for (let i = 0; i < lines.length; i++) {
+                if (matchSection(lines[i], 'FAN COOLING')) {
+                    const found = firstDataRowAfter(i);
+                    if (found) result.mulaiCooling = findTime(found.row);
+                    console.log('mulaiCooling:', result.mulaiCooling);
+                    break;
+                }
+            }
+
+            // 6. EQUALIZATION → selesaiCooling
+            for (let i = 0; i < lines.length; i++) {
+                if (matchSection(lines[i], 'EQUALIZATION')) {
+                    // Coba baris data normal di bawah header
+                    const found = firstDataRowAfter(i);
+                    if (found) {
+                        result.selesaiCooling = findTime(found.row);
+                    }
+                    // Fallback: waktu mungkin tergabung dalam baris header (OCR merge)
+                    if (!result.selesaiCooling) {
+                        result.selesaiCooling = findTime(lines[i]);
+                    }
+                    // Fallback 2: cari baris berikutnya yang mengandung waktu meski bukan di awal
+                    if (!result.selesaiCooling) {
+                        for (let j = i + 1; j < Math.min(i + 8, lines.length); j++) {
+                            const t = findTime(lines[j]);
+                            if (t) { result.selesaiCooling = t; break; }
+                        }
+                    }
+                    console.log('selesaiCooling:', result.selesaiCooling);
+                    break;
+                }
+            }
+
+            // FALLBACK A: Sensor belum lengkap → filter berdasarkan range nilai
+            const sensorMissing = !result.suhuA102 || !result.suhuA125 ||
+                                   !result.tekananA106 || !result.tekananA129;
+            if (sensorMissing) {
+                for (let i = 0; i < lines.length; i++) {
+                    if (matchSection(lines[i], 'POSTTREATMENT')) {
+                        const found = firstDataRowAfter(i);
+                        if (found) {
+                            const allNums = (found.row.match(/\d+\.\d+/g) || []).map(Number);
+                            const pressures = allNums.filter(v => v >= 1.0 && v <= 6.0);
+                            const temps     = allNums.filter(v => v >= 100 && v <= 145);
+                            console.log('FALLBACK A pressures:', pressures, 'temps:', temps);
+                            if (!result.tekananA106 && pressures[0] !== undefined)
+                                result.tekananA106 = pressures[0].toFixed(3);
+                            if (!result.tekananA129 && pressures[1] !== undefined)
+                                result.tekananA129 = pressures[1].toFixed(3);
+                            if (!result.suhuA102 && temps[0] !== undefined)
+                                result.suhuA102 = temps[0].toFixed(1);
+                            if (!result.suhuA125 && temps[1] !== undefined)
+                                result.suhuA125 = temps[1].toFixed(1);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // FALLBACK B: totalWaktu belum ada → baris data terakhir sebelum LOWEST/HIGHEST
+            if (!result.totalWaktu) {
+                for (let i = 0; i < lines.length; i++) {
+                    if (/lowest|highest|process\s*ok/i.test(lines[i])) {
+                        for (let j = i - 1; j >= Math.max(0, i - 5); j--) {
+                            const t = findTime(lines[j]);
+                            if (t) { result.totalWaktu = t; break; }
+                        }
+                        if (result.totalWaktu) break;
+                    }
+                }
+            }
+
+            console.log('=== EXTRACTED ===', result);
+            return result;
+        }
+
+
+        // ==========================================
+        // TAMPILKAN HASIL OCR
+        // ==========================================
+        function showOcrResults(extracted, rawText) {
+            ocrExtracted = extracted;
+            document.getElementById('ocrLoader').classList.remove('active');
+
+            // Debug: tampilkan 40 baris pertama teks OCR mentah
+            let debugPanel = document.getElementById('ocrDebugPanel');
+            if (!debugPanel) {
+                debugPanel = document.createElement('div');
+                debugPanel.id = 'ocrDebugPanel';
+                debugPanel.style.cssText = 'margin:8px 0;padding:8px;background:#f1f5f9;border-radius:8px;font-size:10px;font-family:monospace;max-height:120px;overflow-y:auto;color:#334155;white-space:pre;display:none;border:1px solid #cbd5e1;';
+                document.getElementById('ocrResultPanel').insertBefore(debugPanel, document.getElementById('ocrResultTable'));
+            }
+            if (rawText) {
+                const previewLines = rawText.split('\n').slice(0, 80).join('\n');
+                debugPanel.textContent = previewLines;
+                // Tampilkan hanya jika ada field yang tidak terdeteksi
+                const hasEmpty = Object.values(extracted).length < 8;
+                debugPanel.style.display = hasEmpty ? 'block' : 'none';
+            }
+
+            const table = document.getElementById('ocrResultTable');
+            table.innerHTML = '';
+
+            for (const [field, label] of Object.entries(fieldLabels)) {
+                const val = extracted[field];
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="field-name">${label}</td>
+                    <td class="field-val ${val ? 'found' : 'notfound'}">${val || '— tidak terdeteksi —'}</td>
+                `;
+                table.appendChild(tr);
+            }
+
+            document.getElementById('ocrResultPanel').classList.add('active');
+        }
+
+        // ==========================================
+        // TERAPKAN HASIL KE FORM
+        // ==========================================
+        function applyOcrResults() {
+            for (const [field, value] of Object.entries(ocrExtracted)) {
+                const el = document.getElementById(field);
+                if (el && value) {
+                    el.value = value;
+                    el.classList.remove('input-error');
+                    // Trigger change untuk validasi real-time
+                    el.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            }
+            // Pindah ke mode manual agar bisa review
+            switchMode('manual');
+            // Smooth scroll ke form
+            document.getElementById('dataForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // Flash hijau untuk yang terisi
+            document.querySelectorAll('.input-row input').forEach(inp => {
+                if (inp.value) {
+                    inp.style.transition = 'background-color 0.5s';
+                    inp.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
+                    setTimeout(() => { inp.style.backgroundColor = ''; }, 1200);
+                }
+            });
+
+            // Tandai field yang MASIH KOSONG setelah OCR
+            setTimeout(() => {
+                markEmptyFields();
+                const emptyFields = markEmptyFields();
+                if (emptyFields.length > 0) {
+                    const banner = document.getElementById('warningBanner');
+                    const bannerText = document.getElementById('warningBannerText');
+                    const names = emptyFields.map(f => f.label).join(', ');
+                    bannerText.textContent = 'Belum terdeteksi OCR, isi manual: ' + names;
+                    banner.classList.add('show');
+                    // Scroll & fokus ke field kosong pertama
+                    setTimeout(() => {
+                        emptyFields[0].el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        emptyFields[0].el.focus();
+                    }, 600);
+                }
+            }, 300);
+        }
+
+        function resetUpload() {
+            document.getElementById('fileInput').value = '';
+            const previewContainer = document.getElementById('uploadPreviewContainer');
+            previewContainer.innerHTML = '';
+            previewContainer.style.display = 'none';
+            document.getElementById('ocrResultPanel').classList.remove('active');
+            document.getElementById('ocrLoader').classList.remove('active');
+            ocrExtracted = {};
+        }
         // Array input sudah diupdate mengikuti A106 & A129
         const inputList = [
             'mulaiProses', 'totalWaktu', 
@@ -522,6 +1556,29 @@
                     prevEl.focus();
                 }
             });
+
+            // VALIDASI REAL-TIME UNTUK SUHU & TEKANAN
+            el.addEventListener('input', () => {
+                const val = parseFloat(el.value);
+                if (isNaN(val)) {
+                    el.classList.remove('input-error');
+                    return;
+                }
+
+                if (id === 'suhuA102' || id === 'suhuA125') {
+                    if (val < 121.1 || val > 124.0) {
+                        el.classList.add('input-error');
+                    } else {
+                        el.classList.remove('input-error');
+                    }
+                } else if (id === 'tekananA106' || id === 'tekananA129') {
+                    if (val < 2.950 || val > 3.150) {
+                        el.classList.add('input-error');
+                    } else {
+                        el.classList.remove('input-error');
+                    }
+                }
+            });
         });
 
         // MATEMATIKA WAKTU
@@ -560,7 +1617,83 @@
         const btnReset = document.getElementById('btnReset');
         const hasilBox = document.getElementById('hasilBox');
 
+        // Helper: tandai field kosong wajib
+        function markEmptyFields() {
+            const requiredFields = [
+                { id: 'mulaiProses',    label: 'Start Jam (Mulai Proses)' },
+                { id: 'totalWaktu',     label: 'Total Durasi Sterilisasi' },
+                { id: 'mulaiSteril',    label: 'Mulai Steril' },
+                { id: 'selesaiSteril',  label: 'Selesai Steril' },
+                { id: 'mulaiCooling',   label: 'Mulai Cooling' },
+                { id: 'selesaiCooling', label: 'Selesai Cooling' },
+                { id: 'suhuA102',       label: 'Suhu A102' },
+                { id: 'suhuA125',       label: 'Suhu A125' },
+                { id: 'tekananA106',    label: 'Tekanan A106' },
+                { id: 'tekananA129',    label: 'Tekanan A129' },
+            ];
+
+            const emptyFields = [];
+            requiredFields.forEach(({ id, label }) => {
+                const el = document.getElementById(id);
+                const row = el ? el.closest('.input-row') : null;
+                const lbl = row ? row.querySelector('label') : null;
+
+                if (!el) return;
+                if (!el.value || el.value.trim() === '') {
+                    el.classList.add('input-empty');
+                    if (lbl) lbl.classList.add('label-empty');
+                    emptyFields.push({ id, label, el });
+                    // Re-trigger shake on repeated click
+                    el.style.animation = 'none';
+                    requestAnimationFrame(() => {
+                        el.style.animation = '';
+                        el.classList.remove('input-empty');
+                        void el.offsetWidth; // force reflow
+                        el.classList.add('input-empty');
+                    });
+                } else {
+                    el.classList.remove('input-empty');
+                    if (lbl) lbl.classList.remove('label-empty');
+                }
+            });
+
+            return emptyFields;
+        }
+
+        // Bersihkan tanda empty saat user mulai mengetik
+        document.querySelectorAll('#mulaiProses,#totalWaktu,#mulaiSteril,#selesaiSteril,#mulaiCooling,#selesaiCooling,#suhuA102,#suhuA125,#tekananA106,#tekananA129').forEach(el => {
+            el.addEventListener('input', () => {
+                if (el.value.trim() !== '') {
+                    el.classList.remove('input-empty');
+                    const lbl = el.closest('.input-row')?.querySelector('label');
+                    if (lbl) lbl.classList.remove('label-empty');
+                    // Sembunyikan banner jika semua sudah terisi
+                    // Banner akan otomatis hilang setelah beberapa detik
+                }
+            });
+        });
+
         btnHitung.addEventListener('click', () => {
+            // Tampilkan peringatan field kosong — tapi TETAP lanjut hitung
+            const emptyFields = markEmptyFields();
+            const banner = document.getElementById('warningBanner');
+            const bannerText = document.getElementById('warningBannerText');
+
+            if (emptyFields.length > 0) {
+                const names = emptyFields.map(f => f.label).join(', ');
+                bannerText.textContent = `Kolom belum diisi: ${names}`;
+                banner.classList.add('show');
+                // Hanya got fokus ke field kosong pertama, tidak memblokir
+                emptyFields[0].el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => emptyFields[0].el.focus(), 300);
+                // Auto sembunyikan banner setelah 5 detik
+                clearTimeout(window._bannerTimeout);
+                window._bannerTimeout = setTimeout(() => banner.classList.remove('show'), 5000);
+            } else {
+                banner.classList.remove('show');
+            }
+
+            // Lanjut hitung tanpa peduli kosong atau tidak
             const mProses = document.getElementById('mulaiProses').value || "-";
             const tWaktu = document.getElementById('totalWaktu').value || "-";
             
@@ -572,6 +1705,18 @@
             document.getElementById('resSumSelesai').textContent = jamSelesaiProses;
 
             const mSteril = document.getElementById('mulaiSteril').value;
+            // Konversi HH:MM:SS → total menit (abaikan detik, hitung jam)
+            let heatUpMenit = "-";
+            if (mSteril && mSteril.includes(':')) {
+                const parts = mSteril.split(':');
+                if (parts.length >= 2) {
+                    const jam   = parseInt(parts[0]) || 0;
+                    const menit = parseInt(parts[1]) || 0;
+                    heatUpMenit = (jam * 60 + menit) + " menit";
+                }
+            }
+            document.getElementById('resSumHeatUp').textContent = heatUpMenit;
+
             const sSteril = document.getElementById('selesaiSteril').value;
             const mCool = document.getElementById('mulaiCooling').value;
             const sCool = document.getElementById('selesaiCooling').value;
@@ -581,12 +1726,45 @@
 
             const suhu1 = parseFloat(document.getElementById('suhuA102').value) || 0;
             const suhu2 = parseFloat(document.getElementById('suhuA125').value) || 0;
-            document.getElementById('resSuhu').textContent = Math.abs(suhu2 - suhu1).toFixed(1) + " °C";
+            const diffSuhu = Math.abs(suhu2 - suhu1);
+            const resSuhuEl = document.getElementById('resSuhu');
+            const infoSuhu = document.getElementById('infoSuhu');
+            
+            resSuhuEl.textContent = diffSuhu.toFixed(1) + " °C";
+            
+            // Logika Peringatan Suhu
+            resSuhuEl.classList.remove('text-warning', 'text-critical');
+            infoSuhu.style.display = 'none';
+            infoSuhu.classList.remove('critical');
+
+            if (diffSuhu >= 0.8) {
+                resSuhuEl.classList.add('text-critical');
+                infoSuhu.style.display = 'inline-flex';
+                infoSuhu.classList.add('critical');
+            } else if (diffSuhu >= 0.2) {
+                resSuhuEl.classList.add('text-warning');
+                infoSuhu.style.display = 'inline-flex';
+            }
 
             // Mengambil data dari id A106 dan A129
             const tek1 = parseFloat(document.getElementById('tekananA106').value) || 0;
             const tek2 = parseFloat(document.getElementById('tekananA129').value) || 0;
-            document.getElementById('resTekanan').textContent = Math.abs(tek2 - tek1).toFixed(3) + " bar";
+            const diffTek = Math.abs(tek2 - tek1);
+            const resTekananEl = document.getElementById('resTekanan');
+            const infoTekanan = document.getElementById('infoTekanan');
+
+            resTekananEl.textContent = diffTek.toFixed(3) + " bar";
+            
+            // Logika Peringatan Tekanan
+            resTekananEl.classList.remove('text-warning', 'text-critical');
+            infoTekanan.style.display = 'none';
+
+            if (diffTek >= 0.4) {
+                resTekananEl.classList.add('text-critical');
+                infoTekanan.style.display = 'inline-flex';
+            } else {
+                resTekananEl.classList.add('val-orange');
+            }
 
             hasilBox.style.display = 'block';
             hasilBox.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -639,9 +1817,46 @@
         });
 
         window.addEventListener('appinstalled', () => {
-            console.log('Aplikasi sukses diinstal');
-            installBanner.style.display = 'none';
-        });
+                console.log('Aplikasi sukses diinstal');
+                installBanner.style.display = 'none';
+            });
+
+            // FUNGSI ALERT CUSTOM
+            function showAlert(type) {
+                const s1 = parseFloat(document.getElementById('suhuA102').value) || 0;
+                const s2 = parseFloat(document.getElementById('suhuA125').value) || 0;
+                const dS = Math.abs(s2 - s1);
+                
+                const t1 = parseFloat(document.getElementById('tekananA106').value) || 0;
+                const t2 = parseFloat(document.getElementById('tekananA129').value) || 0;
+                const dT = Math.abs(t2 - t1);
+
+                const modal = document.getElementById('customAlert');
+                const desc = document.getElementById('alertDescription');
+                const icon = document.getElementById('modalIcon');
+
+                if (type === 'suhu') {
+                    if (dS >= 0.8) {
+                        desc.textContent = "SCW segera lapor SPV dan enginering karena selisih suhu sudah 0.9 harus ganti probe";
+                        icon.textContent = "🔴";
+                        modal.classList.add('active');
+                    } else if (dS >= 0.3) {
+                        desc.textContent = "selisih suhu sudah 0.3 SCW segera lapor SPV atau Enginering";
+                        icon.textContent = "⚠️";
+                        modal.classList.add('active');
+                    }
+                } else if (type === 'tekanan') {
+                    if (dT >= 0.4) {
+                        desc.textContent = "SCW segera lapor SPV dan enginering karena selisih tekanan sudah mencapai 0.4 bar!";
+                        icon.textContent = "🔴";
+                        modal.classList.add('active');
+                    }
+                }
+            }
+
+            function closeAlert() {
+                document.getElementById('customAlert').classList.remove('active');
+            }
     </script>
 </body>
 </html>
