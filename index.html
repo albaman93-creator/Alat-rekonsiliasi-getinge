@@ -138,20 +138,111 @@
 
         .theme-toggle {
             align-self: flex-end;
-            background: transparent;
-            border: 2px solid var(--text-main);
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
+            backdrop-filter: blur(10px);
+            border: 1.5px solid rgba(255,255,255,0.3);
             color: var(--text-main);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 800;
+            padding: 10px 18px;
+            border-radius: 24px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
             cursor: pointer;
-            transition: 0.3s;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            user-select: none;
+        }
+
+        .theme-toggle::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            right: -100%;
+            width: 100%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%);
+            transform: skewX(-20deg);
+            transition: all 0.6s;
+        }
+
+        .theme-toggle:hover::before {
+            right: 150%;
         }
         
         .theme-toggle:hover {
-            background-color: var(--text-main);
-            color: var(--bg-card);
+            background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.1) 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.15), inset 0 1px 1px rgba(255,255,255,0.5), 0 0 20px rgba(0,0,0,0.08);
+            border-color: rgba(255,255,255,0.45);
+        }
+
+        .theme-toggle:active {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.3);
+        }
+
+        /* Light theme enhancement */
+        [data-theme="clean"] .theme-toggle {
+            color: #1f2937;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(129, 140, 248, 0.05) 100%);
+            border-color: rgba(59, 130, 246, 0.2);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.08), inset 0 1px 1px rgba(255,255,255,0.6);
+        }
+
+        [data-theme="clean"] .theme-toggle:hover {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(129, 140, 248, 0.1) 100%);
+            border-color: rgba(59, 130, 246, 0.3);
+            box-shadow: 0 12px 32px rgba(59, 130, 246, 0.12), inset 0 1px 1px rgba(255,255,255,0.7), 0 0 20px rgba(59, 130, 246, 0.1);
+            color: #1e40af;
+        }
+
+        /* Gold theme enhancement */
+        [data-theme="gold"] .theme-toggle {
+            color: #92400e;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(248, 113, 113, 0.05) 100%);
+            border-color: rgba(251, 191, 36, 0.3);
+            box-shadow: 0 8px 24px rgba(251, 191, 36, 0.1), inset 0 1px 1px rgba(255,255,255,0.5);
+        }
+
+        [data-theme="gold"] .theme-toggle:hover {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(248, 113, 113, 0.1) 100%);
+            border-color: rgba(251, 191, 36, 0.4);
+            box-shadow: 0 12px 32px rgba(251, 191, 36, 0.15), inset 0 1px 1px rgba(255,255,255,0.6), 0 0 25px rgba(251, 191, 36, 0.15);
+            color: #b45309;
+        }
+
+        /* Dark theme enhancement */
+        [data-theme="dark"] .theme-toggle {
+            color: #f3f4f6;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 100%);
+            border-color: rgba(255,255,255,0.15);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.15), 0 0 30px rgba(0,0,0,0.3);
+        }
+
+        [data-theme="dark"] .theme-toggle:hover {
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%);
+            border-color: rgba(255,255,255,0.25);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.2), 0 0 40px rgba(255,255,255,0.1);
+            color: #ffffff;
+        }
+
+        /* Pulse animation untuk theme toggle */
+        @keyframes themeGlow {
+            0%, 100% {
+                box-shadow: 0 8px 24px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.4), 0 0 0px rgba(0,0,0,0.05);
+            }
+            50% {
+                box-shadow: 0 8px 24px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.4), 0 0 15px rgba(0,0,0,0.15);
+            }
+        }
+
+        .theme-toggle {
+            animation: themeGlow 3s ease-in-out infinite 0.5s;
         }
 
         .section-group { margin-bottom: 18px; }
@@ -514,65 +605,135 @@
 
         .btn-container {
             display: flex;
-            gap: 12px;
-            margin-top: 25px;
+            gap: 14px;
+            margin-top: 28px;
         }
 
         .btn {
             flex: 1;
-            padding: 15px;
+            padding: 16px 20px;
             border: none;
             color: white;
-            font-size: 1rem;
-            font-weight: 800;
-            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            border-radius: 14px;
             cursor: pointer;
             text-transform: uppercase;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            letter-spacing: 1px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15), inset 0 -4px 0 rgba(0,0,0,0.2), inset 0 2px 0 rgba(255,255,255,0.3);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            letter-spacing: 0.8px;
             position: relative;
             overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12), inset 0 1px 1px rgba(255,255,255,0.3), 0 0 30px rgba(0,0,0,0.08);
         }
 
-        .btn::after {
+        /* Shine effect untuk button */
+        .btn::before {
             content: "";
             position: absolute;
             top: -50%;
-            left: -100%;
-            width: 50%;
+            right: -100%;
+            width: 100%;
             height: 200%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%);
             transform: skewX(-20deg);
-            transition: 0.5s;
+            transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .btn:hover::after {
-            left: 150%;
+        .btn:hover::before {
+            right: 150%;
+        }
+
+        /* Ripple effect pada click */
+        .btn::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:active::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.4), 0 0 50px rgba(0,0,0,0.15);
         }
 
         .btn:active {
-            transform: translateY(3px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2), inset 0 -1px 0 rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15), inset 0 1px 1px rgba(255,255,255,0.3);
         }
 
+        /* Modern gradient buttons */
         .btn-hitung { 
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 50%, #0e7490 100%);
+            color: #ffffff;
+        }
+        
+        .btn-hitung:hover {
+            background: linear-gradient(135deg, #0891b2 0%, #0e7490 50%, #164e63 100%);
         }
         
         .btn-reset { 
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); 
+            background: linear-gradient(135deg, #f43f5e 0%, #e11d48 50%, #be185d 100%);
+            color: #ffffff;
+        }
+        
+        .btn-reset:hover {
+            background: linear-gradient(135deg, #e11d48 0%, #be185d 50%, #9d174d 100%);
         }
 
-        /* Animasi Kilatan Otomatis */
-        @keyframes shinny {
-            0% { left: -100%; }
-            20% { left: 150%; }
-            100% { left: 150%; }
+        /* Animasi pulse untuk button hitung */
+        @keyframes smoothPulse {
+            0%, 100% { box-shadow: 0 8px 32px rgba(6, 182, 212, 0.3), inset 0 1px 1px rgba(255,255,255,0.3); }
+            50% { box-shadow: 0 14px 48px rgba(6, 182, 212, 0.5), inset 0 1px 1px rgba(255,255,255,0.3); }
         }
 
-        .btn-hitung::after {
-            animation: shinny 4s infinite ease-in-out;
+        .btn-hitung {
+            animation: smoothPulse 3s ease-in-out infinite;
+        }
+        
+        .btn-hitung:hover {
+            animation: none;
+        }
+
+        /* Dark theme button enhancement */
+        [data-theme="dark"] .btn {
+            background: rgba(255,255,255,0.08) !important;
+            border-color: rgba(255,255,255,0.1) !important;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.1), 0 0 30px rgba(0,0,0,0.2) !important;
+        }
+        
+        [data-theme="dark"] .btn:hover {
+            background: rgba(255,255,255,0.12) !important;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.15) !important;
+        }
+        
+        [data-theme="dark"] .btn-hitung {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.7) 0%, rgba(8, 145, 178, 0.6) 50%, rgba(14, 116, 144, 0.5) 100%) !important;
+            animation: smoothPulse 3s ease-in-out infinite;
+        }
+        
+        [data-theme="dark"] .btn-hitung:hover {
+            background: linear-gradient(135deg, rgba(8, 145, 178, 0.8) 0%, rgba(14, 116, 144, 0.7) 50%, rgba(22, 78, 99, 0.6) 100%) !important;
+        }
+        
+        [data-theme="dark"] .btn-reset {
+            background: linear-gradient(135deg, rgba(244, 63, 94, 0.7) 0%, rgba(225, 29, 72, 0.6) 50%, rgba(190, 24, 93, 0.5) 100%) !important;
+        }
+        
+        [data-theme="dark"] .btn-reset:hover {
+            background: linear-gradient(135deg, rgba(225, 29, 72, 0.8) 0%, rgba(190, 24, 93, 0.7) 50%, rgba(157, 23, 77, 0.6) 100%) !important;
         }
 
         .hasil-wrapper {
@@ -1196,7 +1357,7 @@
         // ==========================================
         // IMAGE OCR via Tesseract.js
         // ==========================================
-        // Pre-proses gambar: tingkatkan kontras & sharpness untuk print-out dot matrix
+        // Pre-proses gambar: tingkatkan kontras & sharpness untuk print-out dot matrix (BALANCED v1)
         async function preprocessImage(file) {
             return new Promise((resolve) => {
                 const img = new Image();
@@ -1215,13 +1376,21 @@
                     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                     const data = imageData.data;
 
-                    // Konversi ke grayscale + tingkatkan kontras (threshold adaptif)
+                    // Konversi ke grayscale + tingkatkan kontras (threshold adaptif - balanced)
                     for (let i = 0; i < data.length; i += 4) {
-                        // Grayscale
+                        // Grayscale dengan weighted formula
                         const gray = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
-                        // Tingkatkan kontras: push ke hitam/putih
-                        // Threshold 128: di bawah → lebih gelap, di atas → lebih terang
-                        const enhanced = gray < 160 ? Math.max(0, gray * 0.6) : Math.min(255, gray * 1.2);
+                        
+                        // Moderate contrast enhancement (tidak terlalu aggressive)
+                        let enhanced;
+                        if (gray < 128) {
+                            // Shadows: sedikit lebih gelap
+                            enhanced = gray * 0.85;
+                        } else {
+                            // Highlights: sedikit lebih terang
+                            enhanced = Math.min(255, gray * 1.15);
+                        }
+                        
                         data[i] = data[i+1] = data[i+2] = enhanced;
                         data[i+3] = 255;
                     }
