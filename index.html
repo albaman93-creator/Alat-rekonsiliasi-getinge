@@ -138,10 +138,10 @@
 
         .theme-toggle {
             align-self: flex-end;
-            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             backdrop-filter: blur(10px);
-            border: 1.5px solid rgba(255,255,255,0.3);
-            color: var(--text-main);
+            border: 1.5px solid #1e40af;
+            color: #ffffff;
             padding: 10px 18px;
             border-radius: 24px;
             font-size: 0.85rem;
@@ -151,7 +151,7 @@
             transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             position: relative;
             overflow: hidden;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.4);
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.3), inset 0 1px 1px rgba(255,255,255,0.4);
             display: flex;
             align-items: center;
             gap: 8px;
@@ -165,7 +165,7 @@
             right: -100%;
             width: 100%;
             height: 200%;
-            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%);
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
             transform: skewX(-20deg);
             transition: all 0.6s;
         }
@@ -175,74 +175,83 @@
         }
         
         .theme-toggle:hover {
-            background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.1) 100%);
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
             transform: translateY(-3px);
-            box-shadow: 0 12px 32px rgba(0,0,0,0.15), inset 0 1px 1px rgba(255,255,255,0.5), 0 0 20px rgba(0,0,0,0.08);
-            border-color: rgba(255,255,255,0.45);
+            box-shadow: 0 12px 32px rgba(37, 99, 235, 0.4), inset 0 1px 1px rgba(255,255,255,0.5), 0 0 25px rgba(37, 99, 235, 0.2);
+            border-color: #1e3a8a;
         }
 
         .theme-toggle:active {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.3);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3), inset 0 1px 1px rgba(255,255,255,0.3);
         }
 
-        /* Light theme enhancement */
-        [data-theme="clean"] .theme-toggle {
-            color: #1f2937;
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(129, 140, 248, 0.05) 100%);
-            border-color: rgba(59, 130, 246, 0.2);
-            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.08), inset 0 1px 1px rgba(255,255,255,0.6);
-        }
-
-        [data-theme="clean"] .theme-toggle:hover {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(129, 140, 248, 0.1) 100%);
-            border-color: rgba(59, 130, 246, 0.3);
-            box-shadow: 0 12px 32px rgba(59, 130, 246, 0.12), inset 0 1px 1px rgba(255,255,255,0.7), 0 0 20px rgba(59, 130, 246, 0.1);
-            color: #1e40af;
-        }
-
-        /* Gold theme enhancement */
+        /* Gold theme button - warm orange/amber color */
         [data-theme="gold"] .theme-toggle {
-            color: #92400e;
-            background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(248, 113, 113, 0.05) 100%);
-            border-color: rgba(251, 191, 36, 0.3);
-            box-shadow: 0 8px 24px rgba(251, 191, 36, 0.1), inset 0 1px 1px rgba(255,255,255,0.5);
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            border-color: #c2410c;
+            box-shadow: 0 8px 24px rgba(249, 115, 22, 0.3), inset 0 1px 1px rgba(255,255,255,0.3);
+            color: #fff;
         }
 
         [data-theme="gold"] .theme-toggle:hover {
-            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(248, 113, 113, 0.1) 100%);
-            border-color: rgba(251, 191, 36, 0.4);
-            box-shadow: 0 12px 32px rgba(251, 191, 36, 0.15), inset 0 1px 1px rgba(255,255,255,0.6), 0 0 25px rgba(251, 191, 36, 0.15);
-            color: #b45309;
+            background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+            box-shadow: 0 12px 32px rgba(249, 115, 22, 0.4), inset 0 1px 1px rgba(255,255,255,0.4), 0 0 25px rgba(249, 115, 22, 0.2);
+            border-color: #92400e;
         }
 
-        /* Dark theme enhancement */
+        /* Dark theme button - vibrant cyan/teal color */
         [data-theme="dark"] .theme-toggle {
-            color: #f3f4f6;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 100%);
-            border-color: rgba(255,255,255,0.15);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.15), 0 0 30px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            border-color: #0e7490;
+            box-shadow: 0 8px 24px rgba(6, 182, 212, 0.3), inset 0 1px 1px rgba(255,255,255,0.3);
+            color: #fff;
         }
 
         [data-theme="dark"] .theme-toggle:hover {
-            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%);
-            border-color: rgba(255,255,255,0.25);
-            box-shadow: 0 12px 32px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.2), 0 0 40px rgba(255,255,255,0.1);
-            color: #ffffff;
+            background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+            box-shadow: 0 12px 32px rgba(6, 182, 212, 0.4), inset 0 1px 1px rgba(255,255,255,0.4), 0 0 25px rgba(6, 182, 212, 0.2);
+            border-color: #164e63;
         }
 
         /* Pulse animation untuk theme toggle */
         @keyframes themeGlow {
             0%, 100% {
-                box-shadow: 0 8px 24px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.4), 0 0 0px rgba(0,0,0,0.05);
+                box-shadow: 0 8px 24px rgba(37, 99, 235, 0.3), inset 0 1px 1px rgba(255,255,255,0.4), 0 0 0px rgba(37, 99, 235, 0.1);
             }
             50% {
-                box-shadow: 0 8px 24px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.4), 0 0 15px rgba(0,0,0,0.15);
+                box-shadow: 0 8px 24px rgba(37, 99, 235, 0.3), inset 0 1px 1px rgba(255,255,255,0.4), 0 0 15px rgba(37, 99, 235, 0.3);
             }
         }
 
         .theme-toggle {
             animation: themeGlow 3s ease-in-out infinite 0.5s;
+        }
+
+        [data-theme="gold"] .theme-toggle {
+            animation: themeGlow-gold 3s ease-in-out infinite 0.5s;
+        }
+
+        @keyframes themeGlow-gold {
+            0%, 100% {
+                box-shadow: 0 8px 24px rgba(249, 115, 22, 0.3), inset 0 1px 1px rgba(255,255,255,0.3), 0 0 0px rgba(249, 115, 22, 0.1);
+            }
+            50% {
+                box-shadow: 0 8px 24px rgba(249, 115, 22, 0.3), inset 0 1px 1px rgba(255,255,255,0.3), 0 0 15px rgba(249, 115, 22, 0.3);
+            }
+        }
+
+        [data-theme="dark"] .theme-toggle {
+            animation: themeGlow-dark 3s ease-in-out infinite 0.5s;
+        }
+
+        @keyframes themeGlow-dark {
+            0%, 100% {
+                box-shadow: 0 8px 24px rgba(6, 182, 212, 0.3), inset 0 1px 1px rgba(255,255,255,0.3), 0 0 0px rgba(6, 182, 212, 0.1);
+            }
+            50% {
+                box-shadow: 0 8px 24px rgba(6, 182, 212, 0.3), inset 0 1px 1px rgba(255,255,255,0.3), 0 0 15px rgba(6, 182, 212, 0.3);
+            }
         }
 
         .section-group { margin-bottom: 18px; }
@@ -2027,7 +2036,7 @@
             document.addEventListener('keydown', handleEscape);
         }
 
-        // Bersihkan tanda empty saat user mulai mengetik + Hide keyboard saat field terakhir
+        // Bersihkan tanda empty saat user mulai mengetik
         const allInputFields = document.querySelectorAll('#mulaiProses,#totalWaktu,#mulaiSteril,#selesaiSteril,#mulaiCooling,#selesaiCooling,#suhuA102,#suhuA125,#tekananA106,#tekananA129');
         allInputFields.forEach((el, idx) => {
             el.addEventListener('input', () => {
@@ -2035,11 +2044,6 @@
                     el.classList.remove('input-empty');
                     const lbl = el.closest('.input-row')?.querySelector('label');
                     if (lbl) lbl.classList.remove('label-empty');
-                }
-                
-                // Hide keyboard ketika field terakhir diisi
-                if (el.id === 'tekananA129' && el.value.trim() !== '') {
-                    el.blur();
                 }
             });
         });
