@@ -1126,11 +1126,11 @@
             <div class="section-group">
                 <h3 class="section-title">WAKTU PROSES</h3>
                 <div class="input-row">
-                    <label>Start Jam</label>
+                    <label>PROCCES START</label>
                     <input type="text" id="mulaiProses" inputmode="numeric" placeholder="HH:mm:ss" autocomplete="off">
                 </div>
                 <div class="input-row">
-                    <label>Total durasi sterilisasi</label>
+                    <label>PROCESS COMPLETE</label>
                     <input type="text" id="totalWaktu" inputmode="numeric" placeholder="HH:mm:ss" autocomplete="off">
                 </div>
             </div>
@@ -1138,11 +1138,11 @@
             <div class="section-group">
                 <h3 class="section-title">STERIL</h3>
                 <div class="input-row">
-                    <label>Mulai Steril</label>
+                    <label>FAN STERILIZING</label>
                     <input type="text" id="mulaiSteril" inputmode="numeric" placeholder="HH:mm:ss" autocomplete="off">
                 </div>
                 <div class="input-row">
-                    <label>Selesai Steril</label>
+                    <label>POSTTREATMENT</label>
                     <input type="text" id="selesaiSteril" inputmode="numeric" placeholder="HH:mm:ss" autocomplete="off">
                 </div>
             </div>
@@ -1150,11 +1150,11 @@
             <div class="section-group">
                 <h3 class="section-title">COOLING</h3>
                 <div class="input-row">
-                    <label>Mulai Cooling</label>
+                    <label>FAN COOLING</label>
                     <input type="text" id="mulaiCooling" inputmode="numeric" placeholder="HH:mm:ss" autocomplete="off">
                 </div>
                 <div class="input-row">
-                    <label>Selesai Cooling</label>
+                    <label>EQUALIZATION</label>
                     <input type="text" id="selesaiCooling" inputmode="numeric" placeholder="HH:mm:ss" autocomplete="off">
                 </div>
             </div>
@@ -1289,12 +1289,12 @@
         let ocrExtracted = {};
 
         const fieldLabels = {
-            mulaiProses:    'Start Jam (Mulai Proses)',
-            totalWaktu:     'Total Durasi Sterilisasi',
-            mulaiSteril:    'Mulai Steril',
-            selesaiSteril:  'Selesai Steril',
-            mulaiCooling:   'Mulai Cooling',
-            selesaiCooling: 'Selesai Cooling',
+            mulaiProses:    'PROCCES START (Mulai Proses)',
+            totalWaktu:     'PROCESS COMPLETE',
+            mulaiSteril:    'FAN STERILIZING',
+            selesaiSteril:  'POSTTREATMENT',
+            mulaiCooling:   'FAN COOLING',
+            selesaiCooling: 'EQUALIZATION',
             suhuA102:       'Suhu A102 (°C)',
             suhuA125:       'Suhu A125 (°C)',
             tekananA106:    'Tekanan A106 (bar)',
@@ -1951,12 +1951,12 @@
         // Helper: tandai field kosong wajib
         function markEmptyFields() {
             const requiredFields = [
-                { id: 'mulaiProses',    label: 'Start Jam (Mulai Proses)' },
-                { id: 'totalWaktu',     label: 'Total Durasi Sterilisasi' },
-                { id: 'mulaiSteril',    label: 'Mulai Steril' },
-                { id: 'selesaiSteril',  label: 'Selesai Steril' },
-                { id: 'mulaiCooling',   label: 'Mulai Cooling' },
-                { id: 'selesaiCooling', label: 'Selesai Cooling' },
+                { id: 'mulaiProses',    label: 'PROCCES START (Mulai Proses)' },
+                { id: 'totalWaktu',     label: 'PROCESS COMPLETE' },
+                { id: 'mulaiSteril',    label: 'FAN STERILIZING' },
+                { id: 'selesaiSteril',  label: 'POSTTREATMENT' },
+                { id: 'mulaiCooling',   label: 'FAN COOLING' },
+                { id: 'selesaiCooling', label: 'EQUALIZATION' },
                 { id: 'suhuA102',       label: 'Suhu A102' },
                 { id: 'suhuA125',       label: 'Suhu A125' },
                 { id: 'tekananA106',    label: 'Tekanan A106' },
