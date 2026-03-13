@@ -1058,7 +1058,7 @@
         [data-theme="dark"] .ocr-tip { color: #fde68a; }
     </style>
 </head>
-<body data-theme="clean">
+<body data-theme="dark">
 
     <div id="installBanner" class="install-banner">
         <div class="install-content">
@@ -1835,9 +1835,11 @@
         // --- SISTEM 3 TEMA ---
         const themes = ['clean', 'gold', 'dark'];
         const themeLabels = ['☀️ WHITE', '✨ GOLD', '🌙 DARK'];
-        let currentThemeIdx = 0; 
+        let currentThemeIdx = 2; 
 
         const btnTheme = document.getElementById('btnTheme');
+        // Set initial theme button text to DARK
+        btnTheme.textContent = themeLabels[currentThemeIdx];
         btnTheme.addEventListener('click', () => {
             currentThemeIdx = (currentThemeIdx + 1) % themes.length;
             document.body.setAttribute('data-theme', themes[currentThemeIdx]);
