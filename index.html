@@ -1832,18 +1832,58 @@
             'tekananA106', 'tekananA129'
         ];
 
-        // --- SISTEM 3 TEMA ---
+        // --- SISTEM TEMA AUTO + MANUAL ---
         const themes = ['clean', 'gold', 'dark'];
         const themeLabels = ['☀️ WHITE', '✨ GOLD', '🌙 DARK'];
-        let currentThemeIdx = 2; 
+        let currentThemeIdx = 2;
+        let autoThemeEnabled = true; // Toggle untuk auto-switching
 
         const btnTheme = document.getElementById('btnTheme');
-        // Set initial theme button text to DARK
-        btnTheme.textContent = themeLabels[currentThemeIdx];
+
+        // Helper: tentukan tema berdasarkan jam lokal
+        function getThemeByTime() {
+            const now = new Date();
+            const hour = now.getHours();
+            // 06:00-18:00 = WHITE (clean), 18:00-06:00 = DARK
+            return hour >= 6 && hour < 18 ? 'clean' : 'dark';
+        }
+
+        // Helper: update tema
+        function setThemeByName(themeName) {
+            const themeIdx = themes.indexOf(themeName);
+            if (themeIdx !== -1) {
+                currentThemeIdx = themeIdx;
+                document.body.setAttribute('data-theme', themeName);
+                btnTheme.textContent = themeLabels[currentThemeIdx];
+            }
+        }
+
+        // Set tema otomatis saat halaman dimuat
+        setThemeByName(getThemeByTime());
+
+        // Auto-switch tema setiap jam berubah (setiap menit cek perubahan jam)
+        setInterval(() => {
+            if (autoThemeEnabled) {
+                const autoTheme = getThemeByTime();
+                if (document.body.getAttribute('data-theme') !== autoTheme) {
+                    setThemeByName(autoTheme);
+                }
+            }
+        }, 60000); // Cek setiap 1 menit (60000 ms)
+
+        // Tombol: toggle antara auto/manual
         btnTheme.addEventListener('click', () => {
-            currentThemeIdx = (currentThemeIdx + 1) % themes.length;
-            document.body.setAttribute('data-theme', themes[currentThemeIdx]);
-            btnTheme.textContent = themeLabels[currentThemeIdx];
+            if (autoThemeEnabled) {
+                // Matikan auto-switch, ganti ke manual cycling
+                autoThemeEnabled = false;
+                currentThemeIdx = (currentThemeIdx + 1) % themes.length;
+                document.body.setAttribute('data-theme', themes[currentThemeIdx]);
+                btnTheme.textContent = themeLabels[currentThemeIdx] + ' (Manual)';
+            } else {
+                // Nyalakan kembali auto-switch
+                autoThemeEnabled = true;
+                setThemeByName(getThemeByTime());
+            }
         });
 
         // AUTO FORMAT & SMART BACKSPACE
