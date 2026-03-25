@@ -314,7 +314,7 @@
         /* WA MODAL */
         .wa-field-group{margin-bottom:16px;}
         .wa-field-group label{display:block;font-size:.82rem;font-weight:800;color:var(--text-label);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;}
-        .wa-field-group input{width:100%;padding:12px 14px;border:2px solid var(--border-light);border-radius:10px;background:var(--bg-input);color:var(--text-input);font-size:.95rem;font-weight:700;font-family:'Nunito',sans-serif;outline:none;transition:all .2s;}
+        .wa-field-group input{width:100%;padding:12px 14px;border:2px solid var(--border-light);border-radius:10px;background:var(--bg-input);color:var(--text-input);font-size:.95rem;font-weight:700;font-family:'Nunito',sans-serif;outline:none;transition:all .2s;text-transform:uppercase;}
         .wa-field-group input:focus{border-color:var(--border-focus);box-shadow:0 0 0 3px var(--glow-focus);}
         .wa-field-group input::placeholder{color:#94a3b8;font-weight:500;}
         .wa-preview{background:rgba(37,211,102,.06);border:1.5px solid rgba(37,211,102,.3);border-radius:12px;padding:12px 14px;font-size:.78rem;font-family:'JetBrains Mono',monospace;color:var(--text-label);margin-bottom:16px;line-height:1.7;white-space:pre-wrap;word-break:break-word;max-height:240px;overflow-y:auto;}
@@ -988,19 +988,46 @@ function updateWaPreview(){
     const tgl   = now.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
     const jam   = now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}).replace(':','.');
 
-    // Status analisa
-    const stSuhu    = statusAnalisa(h.selisihSuhu.replace(' °C',''), 'suhu');
-    const stTek     = statusAnalisa(h.selisihTekanan.replace(' bar',''), 'tekanan');
+    // Status ikon untuk suhu (A102 vs A125)
+    const s1=parseFloat(h.suhuA102)||0, s2=parseFloat(h.suhuA125)||0;
+    const dS=Math.abs(s2-s1);
+    const ikonSuhuA102 = dS>=0.8 ? '❌' : '✅';
+    const ikonSuhuA125 = dS>=0.8 ? '✅' : '✅';
+
+    // Status ikon untuk tekanan (A106 vs A129)
+    const t1=parseFloat(h.tekananA106)||0, t2=parseFloat(h.tekananA129)||0;
+    const dT=Math.abs(t2-t1);
+    const ikonTekA106 = dT>=0.4 ? '✅' : '✅';
+    const ikonTekA129 = dT>=0.4 ? '❌' : '✅';
+
+    // Selisih suhu analisa
+    let analSuhu;
+    if (dS>=0.8)       analSuhu = `❌ ${dS.toFixed(1)} °C ⚠️ Ganti probe segera!`;
+    else if (dS>=0.2)  analSuhu = `⚠️ ${dS.toFixed(1)} °C (Pantau)`;
+    else               analSuhu = `✅ ${dS.toFixed(1)} °C (Normal)`;
+
+    // Selisih tekanan analisa
+    let analTek;
+    if (dT>=0.4)       analTek = `❌ ${dT.toFixed(3)} bar ⚠️ Lapor SPV/Engineering!`;
+    else if (dT>=0.2)  analTek = `⚠️ ${dT.toFixed(3)} bar (Perhatian)`;
+    else               analTek = `✅ ${dT.toFixed(3)} bar (Normal)`;
+
+    // Waktu steril analisa
     const menitSteril = parseMenitDariStr(h.waktuSteril);
-    const stSteril  = statusAnalisa(menitSteril, 'steril');
-    const stCooling = statusAnalisa(h.waktuCooling, 'cooling');
+    const analSteril  = menitSteril>=15
+        ? `✅ ${h.waktuSteril}`
+        : `❌ ${h.waktuSteril} (< 15 menit!)`;
+
+    // Waktu cooling
+    const analCooling = h.waktuCooling && h.waktuCooling!=='-'
+        ? `✅ ${h.waktuCooling}`
+        : '⚪ -';
 
     const pesan =
 `🏥 *LAPORAN STERILISASI GETINGE*
 📅 ${tgl} — ${jam}
 🏷️ Produk : ${nama}
 🔢 Batch  : ${batch}
-
 📋 *DATA INPUT MESIN*
 - Process Start    : ${h.mulaiProses}
 - Process Complete : ${h.totalWaktu}
@@ -1008,23 +1035,20 @@ function updateWaPreview(){
 - Posttreatment    : ${document.getElementById('selesaiSteril').value||'-'}
 - Fan Cooling      : ${document.getElementById('mulaiCooling').value||'-'}
 - Equalization     : ${document.getElementById('selesaiCooling').value||'-'}
-- Suhu A102        : ${h.suhuA102} °C
-- Suhu A125        : ${h.suhuA125} °C
-- Tekanan A106     : ${h.tekananA106} bar
-- Tekanan A129     : ${h.tekananA129} bar
-
+- Suhu A102        : ${ikonSuhuA102} ${parseFloat(h.suhuA102).toFixed(1)} °C
+- Suhu A125        : ${ikonSuhuA125} ${parseFloat(h.suhuA125).toFixed(1)} °C
+- Tekanan A106     : ${ikonTekA106} ${parseFloat(h.tekananA106).toFixed(3)} bar
+- Tekanan A129     : ${ikonTekA129} ${parseFloat(h.tekananA129).toFixed(3)} bar
 ⏱️ *HASIL PERHITUNGAN*
 - Mulai        : ${h.mulaiProses}
 - Durasi       : ${h.totalWaktu}
 - Lama Heat Up : ${h.heatUp}
 - ✅ Selesai   : *${h.selesai}*
-
 🔬 *ANALISA*
-${stSteril.simbol} Waktu Steril    : ${stSteril.label}
-${stCooling.simbol} Waktu Cooling   : ${stCooling.label}
-${stSuhu.simbol} Selisih Suhu    : ${stSuhu.label}
-${stTek.simbol} Selisih Tekanan : ${stTek.label}
-
+- Waktu Steril    : ${analSteril}
+- Waktu Cooling   : ${analCooling}
+- Selisih Suhu    : ${analSuhu}
+- Selisih Tekanan : ${analTek}
 _Dikirim via Hitung Steril Getinge App_`;
 
     document.getElementById('waPreview').textContent=pesan;
