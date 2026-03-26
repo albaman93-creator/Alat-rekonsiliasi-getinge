@@ -19,7 +19,7 @@ git add .
 
 # Commit message dengan timestamp
 $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm"
-$commitMsg = "update: panduan kolom terbaru + OCR parser v3 kalibrasi print-out Getinge ($timestamp)"
+$commitMsg = "update: panduan kolom terbaru + OCR parser v4 kalibrasi print-out Getinge ($timestamp)"
 
 Write-Host "💾 Commit: $commitMsg" -ForegroundColor Yellow
 git commit -m $commitMsg
