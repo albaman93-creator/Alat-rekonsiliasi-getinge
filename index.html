@@ -1581,15 +1581,7 @@ btnTheme.addEventListener('click', () => {
     // Tidak disimpan ke localStorage — saat tutup & buka lagi, kembali ke auto
 });
 
-// Cek setiap menit — kalau jam berubah periode, ganti tema otomatis
-setInterval(() => {
-    const autoIdx = getAutoThemeIdx();
-    if(autoIdx !== currentThemeIdx){
-        currentThemeIdx = autoIdx;
-        document.body.setAttribute('data-theme', themes[currentThemeIdx]);
-        btnTheme.textContent = themeLabels[currentThemeIdx];
-    }
-}, 60000);
+// Tema hanya berubah saat aplikasi dibuka — tidak ada pengecekan otomatis selama berjalan
 
 inputList.forEach((id,index)=>{
     const el=document.getElementById(id);
