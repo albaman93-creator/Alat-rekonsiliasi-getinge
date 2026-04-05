@@ -1561,13 +1561,54 @@ function resetUpload(){document.getElementById('fileInput').value='';const pc=do
 // =====================================================
 const inputList=['mulaiProses','totalWaktu','mulaiSteril','selesaiSteril','mulaiCooling','selesaiCooling','suhuA102','suhuA125','tekananA106','tekananA129'];
 const themes=['clean','gold','dark'],themeLabels=['☀️ WHITE','✨ GOLD','🌙 DARK'];
-let currentThemeIdx=2;
-const savedTheme=localStorage.getItem(LS_THEME);
-if(savedTheme!==null&&!isNaN(parseInt(savedTheme)))currentThemeIdx=parseInt(savedTheme);
-document.body.setAttribute('data-theme',themes[currentThemeIdx]);
-const btnTheme=document.getElementById('btnTheme');
-btnTheme.textContent=themeLabels[currentThemeIdx];
-btnTheme.addEventListener('click',()=>{currentThemeIdx=(currentThemeIdx+1)%themes.length;document.body.setAttribute('data-theme',themes[currentThemeIdx]);btnTheme.textContent=themeLabels[currentThemeIdx];localStorage.setItem(LS_THEME,currentThemeIdx);});
+// Tema otomatis berdasarkan jam: 06:00–18:00 = WHITE, 18:01–05:59 = DARK
+function getAutoThemeIdx(){
+    const jam = new Date().getHours();
+    return (jam >= 6 && jam < 18) ? 0 : 2; // 0=clean(white), 2=dark
+}
+
+let currentThemeIdx = getAutoThemeIdx();
+// Cek apakah user pernah override manual
+const savedTheme = localStorage.getItem(LS_THEME);
+const savedTime  = localStorage.getItem('getinge_theme_time');
+if(savedTheme !== null && savedTime !== null){
+    // Pakai tema manual selama masih dalam sesi hari yang sama
+    const savedDate = new Date(parseInt(savedTime));
+    const now = new Date();
+    const samePeriod = (getAutoThemeIdx() === parseInt(localStorage.getItem('getinge_theme_auto')));
+    if(samePeriod) currentThemeIdx = parseInt(savedTheme);
+    else { currentThemeIdx = getAutoThemeIdx(); localStorage.removeItem(LS_THEME); }
+} else {
+    currentThemeIdx = getAutoThemeIdx();
+}
+
+document.body.setAttribute('data-theme', themes[currentThemeIdx]);
+const btnTheme = document.getElementById('btnTheme');
+btnTheme.textContent = themeLabels[currentThemeIdx];
+btnTheme.addEventListener('click', () => {
+    currentThemeIdx = (currentThemeIdx + 1) % themes.length;
+    document.body.setAttribute('data-theme', themes[currentThemeIdx]);
+    btnTheme.textContent = themeLabels[currentThemeIdx];
+    // Simpan override manual + waktu simpan + tema auto saat ini
+    localStorage.setItem(LS_THEME, currentThemeIdx);
+    localStorage.setItem('getinge_theme_time', Date.now());
+    localStorage.setItem('getinge_theme_auto', getAutoThemeIdx());
+});
+
+// Cek otomatis setiap menit — ganti tema saat melewati batas jam
+setInterval(()=>{
+    const autoIdx = getAutoThemeIdx();
+    const savedAuto = parseInt(localStorage.getItem('getinge_theme_auto'));
+    // Kalau periode berubah (siang→malam atau malam→siang), reset ke auto
+    if(!isNaN(savedAuto) && savedAuto !== autoIdx){
+        currentThemeIdx = autoIdx;
+        document.body.setAttribute('data-theme', themes[currentThemeIdx]);
+        btnTheme.textContent = themeLabels[currentThemeIdx];
+        localStorage.removeItem(LS_THEME);
+        localStorage.removeItem('getinge_theme_time');
+        localStorage.removeItem('getinge_theme_auto');
+    }
+}, 60000);
 
 inputList.forEach((id,index)=>{
     const el=document.getElementById(id);
