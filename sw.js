@@ -1,6 +1,6 @@
-const CACHE_NAME = 'steril-app-v4';
+const CACHE_NAME = 'steril-app-v5';
 
-// Daftar file yang akan disimpan ke memori HP (Cache)
+// Daftar file yang akan disimpan ke cache
 const urlsToCache = [
   './',
   './index.html',
@@ -9,28 +9,58 @@ const urlsToCache = [
   './icon-512.png'
 ];
 
-// Tahap Install: Simpan semua file ke dalam Cache
+// ─── INSTALL: simpan file ke cache ───────────────────────────
 self.addEventListener('install', event => {
+  // Langsung aktif tanpa menunggu tab lama ditutup
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Cache berhasil dibuka');
-        return cache.addAll(urlsToCache);
-      })
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(urlsToCache);
+    })
   );
 });
 
-// Tahap Fetch: Mengambil data saat aplikasi dibuka
+// ─── ACTIVATE: hapus cache lama otomatis ─────────────────────
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys
+          .filter(key => key !== CACHE_NAME)
+          .map(key => {
+            console.log('Hapus cache lama:', key);
+            return caches.delete(key);
+          })
+      );
+    }).then(() => {
+      // Langsung ambil kontrol semua tab/halaman
+      return self.clients.claim();
+    })
+  );
+});
+
+// ─── FETCH: Network First, fallback ke cache ─────────────────
+// Selalu coba ambil dari internet dulu.
+// Kalau gagal (offline), baru pakai cache.
 self.addEventListener('fetch', event => {
+  // Hanya handle request GET
+  if (event.request.method !== 'GET') return;
+
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Jika file ada di memori HP (offline), gunakan itu.
-        if (response) {
-          return response;
+    fetch(event.request)
+      .then(networkResponse => {
+        // Dapat dari internet — update cache sekalian
+        if (networkResponse && networkResponse.status === 200) {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseClone);
+          });
         }
-        // Jika tidak ada, baru ambil dari internet.
-        return fetch(event.request);
+        return networkResponse;
+      })
+      .catch(() => {
+        // Gagal ambil dari internet (offline) — pakai cache
+        return caches.match(event.request);
       })
   );
 });
