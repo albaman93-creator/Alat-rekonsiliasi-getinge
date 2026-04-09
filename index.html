@@ -8,8 +8,7 @@
     <meta name="theme-color" content="#1e3a8a">
     <link rel="apple-touch-icon" href="./icon-192.png">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- Tesseract & PDF.js di-load lazy (hanya saat tombol upload diklik) -->
     <style>
         :root {
             --bg-body: radial-gradient(circle at 50% 50%, #ffffff 0%, #f0f2f5 50%, #e2e8f0 100%);
@@ -47,7 +46,7 @@
 
         *,*::before,*::after{box-sizing:border-box;}
         body{font-family:'Nunito',sans-serif;background:var(--bg-body);color:var(--text-main);margin:0;padding:20px 15px;display:flex;justify-content:center;min-height:100vh;transition:all .4s ease;}
-        .container{background:var(--bg-card);width:100%;max-width:480px;padding:25px 20px;border-radius:20px;border:1px solid rgba(255,255,255,0.6);box-shadow:var(--shadow-out),var(--shadow-in);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);transition:all .4s ease;margin-bottom:80px;position:relative;overflow:hidden;}
+        .container{background:var(--bg-card);width:100%;max-width:480px;padding:25px 20px;border-radius:20px;border:1px solid rgba(255,255,255,0.6);box-shadow:var(--shadow-out),var(--shadow-in);transition:background .4s ease,box-shadow .4s ease;margin-bottom:80px;position:relative;overflow:hidden;}
         .container::before{content:"";position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(45deg,transparent,rgba(255,255,255,0.1),transparent);transform:rotate(45deg);pointer-events:none;}
 
         .header{display:flex;flex-direction:column;align-items:center;margin-bottom:25px;text-align:center;gap:12px;}
@@ -142,6 +141,7 @@
             background: rgba(0,0,0,.6);
             backdrop-filter: blur(6px);
             -webkit-backdrop-filter: blur(6px);
+            /* backdrop-filter dipertahankan hanya untuk modal overlay, bukan container utama */
             z-index: 4000;
             align-items: center; justify-content: center;
             padding: 20px;
@@ -685,27 +685,27 @@
                         <span class="sum-label">Mulai proses jam</span>
                         <span class="sum-sep">:</span>
                         <span class="sum-val" id="resSumMulai">-</span>
-                        <span class="sum-note">(catat di logbook &amp; TKL)</span>
+                        <span class="sum-note">(logbook &amp; TKL)</span>
                     </div>
                     <div class="sum-row">
                         <span class="sum-label">Selesai proses jam</span>
                         <span class="sum-sep">:</span>
                         <span class="sum-val" id="resSumSelesai">-</span>
-                        <span class="sum-note">(catat di logbook &amp; TKL)</span>
+                        <span class="sum-note">(logbook &amp; TKL)</span>
                     </div>
                     <div style="border-top:1px dashed var(--border-light);margin:10px 0;"></div>
                     <div class="sum-row">
-                        <span class="sum-label">Lama waktu Heat Up</span>
+                        <span class="sum-label"> Heat Up</span>
                         <span class="sum-sep">:</span>
                         <span class="sum-val" id="resSumHeatUp">-</span>
                     </div>
                     <div class="sum-row">
-                        <span class="sum-label">Lama waktu Steril</span>
+                        <span class="sum-label"> Steril</span>
                         <span class="sum-sep">:</span>
                         <span class="sum-val" id="resSteril">-</span>
                     </div>
                     <div class="sum-row">
-                        <span class="sum-label">Lama waktu Cooling</span>
+                        <span class="sum-label"> Cooling</span>
                         <span class="sum-sep">:</span>
                         <span class="sum-val" id="resCooling">-</span>
                     </div>
@@ -744,6 +744,23 @@
 // =====================================================
 if (typeof pdfjsLib !== 'undefined') {
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
+// =====================================================
+// LAZY LOAD — Tesseract & PDF.js dimuat hanya saat dibutuhkan
+// =====================================================
+let _ocrLibsLoaded = false;
+let _ocrLibsLoading = null;
+function loadOcrLibraries() {
+    if (_ocrLibsLoaded) return Promise.resolve();
+    if (_ocrLibsLoading) return _ocrLibsLoading;
+    _ocrLibsLoading = new Promise((resolve, reject) => {
+        let loaded = 0;
+        const onLoad = () => { loaded++; if (loaded === 2) { pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; _ocrLibsLoaded=true; resolve(); } };
+        const s1 = document.createElement('script'); s1.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'; s1.onload=onLoad; s1.onerror=reject; document.head.appendChild(s1);
+        const s2 = document.createElement('script'); s2.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'; s2.onload=onLoad; s2.onerror=reject; document.head.appendChild(s2);
+    });
+    return _ocrLibsLoading;
 }
 
 // =====================================================
@@ -1036,17 +1053,17 @@ function updateWaPreview(){
     const tgl   = now.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
     const jam   = now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}).replace(':','.');
 
-    // Status ikon untuk suhu (A102 vs A125)
+    // Status ikon untuk suhu — cek nilai masing-masing terhadap range valid 121.1–124.0
     const s1=parseFloat(h.suhuA102)||0, s2=parseFloat(h.suhuA125)||0;
     const dS=Math.abs(s2-s1);
-    const ikonSuhuA102 = dS>=0.8 ? '❌' : '✅';
-    const ikonSuhuA125 = dS>=0.8 ? '✅' : '✅';
+    const ikonSuhuA102 = (s1>=121.1 && s1<=124.0) ? '✅' : '❌';
+    const ikonSuhuA125 = (s2>=121.1 && s2<=124.0) ? '✅' : '❌';
 
-    // Status ikon untuk tekanan (A106 vs A129)
+    // Status ikon untuk tekanan — cek nilai masing-masing terhadap range valid 2.950–3.150
     const t1=parseFloat(h.tekananA106)||0, t2=parseFloat(h.tekananA129)||0;
     const dT=Math.abs(t2-t1);
-    const ikonTekA106 = dT>=0.4 ? '✅' : '✅';
-    const ikonTekA129 = dT>=0.4 ? '❌' : '✅';
+    const ikonTekA106 = (t1>=2.950 && t1<=3.150) ? '✅' : '❌';
+    const ikonTekA129 = (t2>=2.950 && t2<=3.150) ? '✅' : '❌';
 
     // Selisih suhu analisa
     let analSuhu;
@@ -1144,15 +1161,17 @@ async function processFiles(files){
     document.getElementById('ocrResultPanel').classList.remove('active');
     document.getElementById('ocrLoader').classList.add('active');
     document.getElementById('ocrProgressBar').style.width='0%';
-    document.getElementById('ocrStatusText').textContent=`Memproses ${files.length} file...`;
+    document.getElementById('ocrStatusText').textContent=`Memuat library OCR...`;
     const pc=document.getElementById('uploadPreviewContainer');pc.innerHTML='';pc.style.display='none';
     const imgs=files.filter(f=>f.type!=='application/pdf');
     if(imgs.length){pc.style.display='flex';pc.style.flexWrap='wrap';pc.style.gap='8px';imgs.forEach(f=>{const img=document.createElement('img');img.src=URL.createObjectURL(f);img.style.cssText='max-height:120px;max-width:calc(50% - 4px);border-radius:8px;object-fit:contain;border:1.5px solid var(--border-light);';pc.appendChild(img);});}
     try{
+        await loadOcrLibraries();
+        document.getElementById('ocrStatusText').textContent=`Memproses ${files.length} file...`;
         let combined='';
         for(let i=0;i<files.length;i++){const f=files[i];setOcrStatus(`File ${i+1}/${files.length}: "${f.name}"...`,Math.round((i/files.length)*100));combined+=(f.type==='application/pdf'?await extractTextFromPDF(f):await extractTextFromImage(f))+'\n';}
         showOcrResults(parseOcrText(combined),combined);
-    }catch(err){console.error(err);document.getElementById('ocrLoader').classList.remove('active');alert('Gagal memproses file.');}
+    }catch(err){console.error(err);document.getElementById('ocrLoader').classList.remove('active');alert('Gagal memproses file. Cek koneksi internet untuk memuat library OCR.');}
 }
 
 async function preprocessImage(file){
@@ -1587,17 +1606,27 @@ inputList.forEach((id,index)=>{
     const el=document.getElementById(id);
     const nextEl=inputList[index+1]?document.getElementById(inputList[index+1]):null;
     const prevEl=inputList[index-1]?document.getElementById(inputList[index-1]):null;
+    // === SATU listener input saja (gabungan format + validasi + clear-empty) ===
     el.addEventListener('input',e=>{
+        // --- Format angka ---
         let v=e.target.value.replace(/\D/g,'');const isDel=e.inputType==='deleteContentBackward';
         if(index<=5){v=v.substring(0,6);let f='';if(v.length>0)f+=v.substring(0,2);if(v.length>2)f+=':'+v.substring(2,4);if(v.length>4)f+=':'+v.substring(4,6);e.target.value=f;if(f.length===8&&!isDel&&nextEl)nextEl.focus();}
         else if(index===6||index===7){v=v.substring(0,4);e.target.value=v.length>=4?v.substring(0,3)+'.'+v.substring(3,4):v;if(v.length===4&&!isDel&&nextEl)nextEl.focus();}
         else{v=v.substring(0,4);e.target.value=v.length>=2?v.substring(0,1)+'.'+v.substring(1,4):v;if(v.length===4&&!isDel&&nextEl)nextEl.focus();}
+        // --- Validasi warna error ---
+        const numVal=parseFloat(e.target.value);
+        if(!isNaN(numVal)){
+            if(id==='suhuA102'||id==='suhuA125'){numVal<121.1||numVal>124.0?el.classList.add('input-error'):el.classList.remove('input-error');}
+            else if(id==='tekananA106'||id==='tekananA129'){numVal<2.950||numVal>3.150?el.classList.add('input-error'):el.classList.remove('input-error');}
+        } else { el.classList.remove('input-error'); }
+        // --- Hapus highlight empty ---
+        if(e.target.value.trim()!==''){el.classList.remove('input-empty');const l=el.closest('.input-row')?.querySelector('label');if(l)l.classList.remove('label-empty');}
+        // --- Autosave debounce ---
         triggerSave();
     });
     el.addEventListener('keydown',e=>{if(e.key==='Backspace'&&el.value===''&&prevEl){e.preventDefault();prevEl.focus();}});
-    el.addEventListener('input',()=>{const v=parseFloat(el.value);if(isNaN(v)){el.classList.remove('input-error');return;}if(id==='suhuA102'||id==='suhuA125'){v<121.1||v>124.0?el.classList.add('input-error'):el.classList.remove('input-error');}else if(id==='tekananA106'||id==='tekananA129'){v<2.950||v>3.150?el.classList.add('input-error'):el.classList.remove('input-error');}});
 });
-document.querySelectorAll('#mulaiProses,#totalWaktu,#mulaiSteril,#selesaiSteril,#mulaiCooling,#selesaiCooling,#suhuA102,#suhuA125,#tekananA106,#tekananA129').forEach(el=>el.addEventListener('input',()=>{if(el.value.trim()!==''){el.classList.remove('input-empty');const l=el.closest('.input-row')?.querySelector('label');if(l)l.classList.remove('label-empty');}}));
+// (listener terpisah di bawah sudah digabung ke atas — tidak perlu lagi)
 
 // =====================================================
 // WAKTU

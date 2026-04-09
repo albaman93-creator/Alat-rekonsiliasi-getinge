@@ -1,6 +1,5 @@
-const CACHE_NAME = 'steril-app-v5';
+const CACHE_NAME = 'steril-app-v6';
 
-// Daftar file yang akan disimpan ke cache
 const urlsToCache = [
   './',
   './index.html',
@@ -9,47 +8,57 @@ const urlsToCache = [
   './icon-512.png'
 ];
 
-// ─── INSTALL: simpan file ke cache ───────────────────────────
+// --- INSTALL: simpan file ke cache ---
 self.addEventListener('install', event => {
-  // Langsung aktif tanpa menunggu tab lama ditutup
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(urlsToCache);
-    })
+    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
   );
 });
 
-// ─── ACTIVATE: hapus cache lama otomatis ─────────────────────
+// --- ACTIVATE: hapus cache lama ---
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys => {
-      return Promise.all(
+    caches.keys().then(keys =>
+      Promise.all(
         keys
           .filter(key => key !== CACHE_NAME)
           .map(key => {
             console.log('Hapus cache lama:', key);
             return caches.delete(key);
           })
-      );
-    }).then(() => {
-      // Langsung ambil kontrol semua tab/halaman
-      return self.clients.claim();
-    })
+      )
+    ).then(() => self.clients.claim())
   );
 });
 
-// ─── FETCH: Network First, fallback ke cache ─────────────────
-// Selalu coba ambil dari internet dulu.
-// Kalau gagal (offline), baru pakai cache.
+// --- FETCH: Cache First + background update (Stale-While-Revalidate) ---
+// Ambil dari cache dulu (instan & offline-ready).
+// Update cache di background supaya selalu fresh untuk request berikutnya.
 self.addEventListener('fetch', event => {
-  // Hanya handle request GET
   if (event.request.method !== 'GET') return;
 
+  // Lewati request ke CDN eksternal (tesseract, pdf.js, fonts)
+  // biarkan browser menangani dengan cache-nya sendiri
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
+
   event.respondWith(
-    fetch(event.request)
-      .then(networkResponse => {
-        // Dapat dari internet — update cache sekalian
+    caches.match(event.request).then(cached => {
+      if (cached) {
+        // Ada di cache -- kembalikan langsung (instan)
+        // Perbarui cache di background untuk request berikutnya
+        fetch(event.request).then(networkResponse => {
+          if (networkResponse && networkResponse.status === 200) {
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, networkResponse);
+            });
+          }
+        }).catch(() => {}); // abaikan jika offline
+        return cached;
+      }
+      // Belum ada di cache -- ambil dari network & simpan
+      return fetch(event.request).then(networkResponse => {
         if (networkResponse && networkResponse.status === 200) {
           const responseClone = networkResponse.clone();
           caches.open(CACHE_NAME).then(cache => {
@@ -57,10 +66,7 @@ self.addEventListener('fetch', event => {
           });
         }
         return networkResponse;
-      })
-      .catch(() => {
-        // Gagal ambil dari internet (offline) — pakai cache
-        return caches.match(event.request);
-      })
+      }).catch(() => caches.match('./index.html'));
+    })
   );
 });
