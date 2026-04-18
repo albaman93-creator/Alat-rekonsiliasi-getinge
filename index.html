@@ -295,12 +295,12 @@
         [data-theme="dark"] .val-orange{color:#f59e0b;}
 
         /* RINGKASAN BARU */
-        .sum-row{display:flex;align-items:baseline;gap:6px;padding:5px 0;border-bottom:1px dashed rgba(148,163,184,.15);}
+        .sum-row{display:grid;grid-template-columns:auto auto 1fr;align-items:baseline;gap:0 6px;padding:5px 0;border-bottom:1px dashed rgba(148,163,184,.15);}
         .sum-row:last-child{border-bottom:none;}
-        .sum-label{font-size:.82rem;font-weight:700;color:var(--text-label);min-width:155px;flex-shrink:0;}
+        .sum-label{font-size:.82rem;font-weight:700;color:var(--text-label);white-space:nowrap;}
         .sum-sep{font-size:.9rem;font-weight:800;color:var(--text-label);flex-shrink:0;}
-        .sum-val{font-family:'JetBrains Mono',monospace;font-size:.95rem;font-weight:800;color:var(--res-text-dark);flex-shrink:0;}
-        .sum-note{font-size:.68rem;font-weight:600;color:#64748b;font-style:italic;}
+        .sum-val{font-family:'JetBrains Mono',monospace;font-size:.95rem;font-weight:800;color:var(--res-text-dark);word-break:break-word;min-width:0;}
+        .sum-note{font-size:.68rem;font-weight:600;color:#64748b;font-style:italic;grid-column:1/-1;padding-left:2px;}
         [data-theme="dark"] .sum-note{color:#475569;}
 
         /* TOMBOL BAWAH HASIL */
